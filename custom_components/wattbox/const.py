@@ -22,7 +22,7 @@ REQUIRED_FILES: Final[List[str]] = [
     "sensor.py",
     "switch.py",
 ]
-ISSUE_URL: Final[str] = "https://github.com/eseglem/hass-wattbox/issues"
+ISSUE_URL: Final[str] = "https://github.com/garthdb/hass-wattbox/issues"
 
 STARTUP: Final[
     str

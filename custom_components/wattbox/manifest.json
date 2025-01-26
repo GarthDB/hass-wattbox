@@ -1,11 +1,11 @@
 {
   "domain": "wattbox",
   "name": "WattBox",
-  "codeowners": ["@eseglem"],
+  "codeowners": ["@garthdb"],
   "dependencies": [],
-  "documentation": "https://github.com/eseglem/hass-wattbox",
+  "documentation": "https://github.com/garthdb/hass-wattbox",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/eseglem/hass-wattbox/issues",
+  "issue_tracker": "https://github.com/garthdb/hass-wattbox/issues",
   "requirements": ["pywattbox>=0.4.0,<0.7.0"],
-  "version": "0.8.0"
+  "version": "0.8.1"
 }

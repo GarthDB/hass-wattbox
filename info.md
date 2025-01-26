@@ -39,15 +39,15 @@ wattbox:
 ***
 
 [wattbox]: https://www.snapav.com/shop/en/snapav/wattbox
-[buymecoffee]: https://www.buymeacoffee.com/eseglem
+[buymecoffee]: https://www.buymeacoffee.com/garthdb
 [buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow
-[commits-shield]: https://img.shields.io/github/last-commit/eseglem/hass-wattbox
-[commits]: https://github.com/eseglem/hass-wattbox/commits/master
+[commits-shield]: https://img.shields.io/github/last-commit/garthdb/hass-wattbox
+[commits]: https://github.com/garthdb/hass-wattbox/commits/master
 [discord]: https://discord.gg/Qa5fW2R
 [discord-shield]: https://img.shields.io/discord/330944238910963714
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen
 [forum]: https://community.home-assistant.io/
-[license-shield]: https://img.shields.io/github/license/eseglem/hass-wattbox
+[license-shield]: https://img.shields.io/github/license/garthdb/hass-wattbox
 [maintenance-shield]: https://img.shields.io/badge/maintainer-Erik%20Seglem%20%40Bedon292-blue
 [hacs]: https://github.com/custom-components/hacs
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange

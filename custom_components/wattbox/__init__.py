@@ -2,7 +2,7 @@
 Component to integrate with wattbox.
 
 For more details about this component, please refer to
-https://github.com/eseglem/hass-wattbox/
+https://github.com/garthdb/hass-wattbox/
 """
 import logging
 import os
