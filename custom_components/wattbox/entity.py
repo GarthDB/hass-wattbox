@@ -7,6 +7,8 @@ from typing import Any
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import DEVICE_MANUFACTURER, DEVICE_MODEL, DOMAIN
+
 
 class WattboxEntity(CoordinatorEntity):
     """Base entity for Wattbox devices."""
@@ -14,14 +16,23 @@ class WattboxEntity(CoordinatorEntity):
     def __init__(
         self,
         coordinator: Any,
-        device_info: DeviceInfo,
+        device_info: dict[str, Any],
         unique_id: str,
     ) -> None:
         """Initialize the entity."""
         super().__init__(coordinator)
         self._device_info = device_info
         self._attr_unique_id = unique_id
-        self._attr_device_info = device_info
+
+        # Build device info from coordinator data
+        device_data = coordinator.data.get("device_info", {})
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, device_data.get("serial_number", "unknown"))},
+            name=device_data.get("hostname", "Wattbox"),
+            manufacturer=DEVICE_MANUFACTURER,
+            model=device_data.get("model", DEVICE_MODEL),
+            sw_version=device_data.get("hardware_version"),
+        )
 
 
 class WattboxDeviceEntity(WattboxEntity):
@@ -30,7 +41,7 @@ class WattboxDeviceEntity(WattboxEntity):
     def __init__(
         self,
         coordinator: Any,
-        device_info: DeviceInfo,
+        device_info: dict[str, Any],
         unique_id: str,
     ) -> None:
         """Initialize the device entity."""
@@ -44,7 +55,7 @@ class WattboxOutletEntity(WattboxEntity):
     def __init__(
         self,
         coordinator: Any,
-        device_info: DeviceInfo,
+        device_info: dict[str, Any],
         unique_id: str,
         outlet_number: int,
     ) -> None:

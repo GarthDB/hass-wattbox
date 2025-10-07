@@ -35,21 +35,21 @@ def mock_device_info():
 async def hass() -> HomeAssistant:
     """Return a Home Assistant instance."""
     import asyncio
-    
+
     # Create a new event loop for this test
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    
+
     hass = HomeAssistant("")
     hass.config_entries = MagicMock()
     hass.entity_registry = MagicMock()
     hass.device_registry = MagicMock()
-    
+
     # Start the Home Assistant instance
     await hass.async_start()
-    
+
     yield hass
-    
+
     # Clean up
     await hass.async_stop()
     loop.close()

@@ -10,6 +10,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import DOMAIN
+from .coordinator import WattboxDataUpdateCoordinator
 from .entity import WattboxOutletEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,9 +23,23 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox switch entities."""
-    # TODO: Implement switch setup
-    # This will be implemented when we create the coordinator and telnet client
-    pass
+    coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+
+    # Get outlet info from coordinator data
+    outlet_info = coordinator.data.get("outlet_info", [])
+
+    # Create switches for each outlet
+    switches = []
+    for i, _outlet in enumerate(outlet_info):
+        switch = WattboxSwitch(
+            coordinator=coordinator,
+            device_info=coordinator.data.get("device_info", {}),
+            unique_id=f"{config_entry.entry_id}_outlet_{i + 1}",
+            outlet_number=i + 1,
+        )
+        switches.append(switch)
+
+    async_add_entities(switches)
 
 
 class WattboxSwitch(WattboxOutletEntity, SwitchEntity):
@@ -31,8 +47,8 @@ class WattboxSwitch(WattboxOutletEntity, SwitchEntity):
 
     def __init__(
         self,
-        coordinator: Any,
-        device_info: Any,
+        coordinator: WattboxDataUpdateCoordinator,
+        device_info: dict[str, Any],
         unique_id: str,
         outlet_number: int,
     ) -> None:
@@ -44,15 +60,16 @@ class WattboxSwitch(WattboxOutletEntity, SwitchEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if the switch is on."""
-        # TODO: Implement state reading from coordinator
+        outlet_info = self.coordinator.data.get("outlet_info", [])
+        if self._outlet_number <= len(outlet_info):
+            outlet = outlet_info[self._outlet_number - 1]
+            return bool(outlet.get("state", 0))
         return None
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
-        # TODO: Implement turn on command
-        pass
+        await self.coordinator.async_set_outlet_state(self._outlet_number, True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
-        # TODO: Implement turn off command
-        pass
+        await self.coordinator.async_set_outlet_state(self._outlet_number, False)
