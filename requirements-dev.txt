@@ -2,11 +2,22 @@
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
 pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+pytest-xdist>=3.3.0
 black>=22.0.0
 isort>=5.10.0
 flake8>=5.0.0
+flake8-docstrings>=1.7.0
+flake8-bugbear>=23.0.0
+flake8-comprehensions>=3.14.0
+flake8-simplify>=0.19.0
 mypy>=1.0.0
 pre-commit>=2.20.0
+bandit>=1.7.0
+safety>=2.3.0
+vulture>=2.7.0
 
 # Home Assistant development
-homeassistant>=2023.1.0
+homeassistant>=2024.12.0
+pytest-homeassistant-custom-component>=0.13.0
+homeassistant-stubs>=2024.12.0
