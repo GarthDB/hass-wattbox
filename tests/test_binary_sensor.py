@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -12,8 +12,8 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.wattbox.binary_sensor import (
-    async_setup_entry,
     WattboxStatusBinarySensor,
+    async_setup_entry,
 )
 
 
@@ -61,25 +61,26 @@ def mock_config_entry() -> ConfigEntry:
 
 @pytest.mark.asyncio
 async def test_async_setup_entry(
-    hass: HomeAssistant, 
+    hass: HomeAssistant,
     mock_config_entry: ConfigEntry,
     mock_coordinator: DataUpdateCoordinator,
     mock_device_info: DeviceInfo,
 ) -> None:
     """Test async_setup_entry for binary sensor platform."""
     # Mock the coordinator and device info
-    with patch("custom_components.wattbox.binary_sensor.async_setup_entry") as mock_setup:
+    with patch(
+        "custom_components.wattbox.binary_sensor.async_setup_entry"
+    ) as mock_setup:
         mock_setup.return_value = True
-        
+
         result = await async_setup_entry(hass, mock_config_entry)
-        
+
         # Since this is a placeholder, it should return True
         assert result is True
 
 
 def test_wattbox_status_binary_sensor_init(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxStatusBinarySensor initialization."""
     sensor = WattboxStatusBinarySensor(
@@ -87,7 +88,7 @@ def test_wattbox_status_binary_sensor_init(
         device_info=mock_device_info,
         unique_id="test_status_sensor",
     )
-    
+
     assert sensor.coordinator == mock_coordinator
     assert sensor.device_info == mock_device_info
     assert sensor.unique_id == "test_status_sensor"
@@ -95,8 +96,7 @@ def test_wattbox_status_binary_sensor_init(
 
 
 def test_wattbox_status_binary_sensor_is_on(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxStatusBinarySensor is_on property."""
     sensor = WattboxStatusBinarySensor(
@@ -104,14 +104,13 @@ def test_wattbox_status_binary_sensor_is_on(
         device_info=mock_device_info,
         unique_id="test_status_sensor",
     )
-    
+
     # Currently returns None (TODO implementation)
     assert sensor.is_on is None
 
 
 def test_wattbox_status_binary_sensor_attributes(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxStatusBinarySensor attributes."""
     sensor = WattboxStatusBinarySensor(
@@ -119,24 +118,25 @@ def test_wattbox_status_binary_sensor_attributes(
         device_info=mock_device_info,
         unique_id="test_status_sensor",
     )
-    
+
     assert sensor.device_class == "connectivity"
 
 
-def test_binary_sensor_inheritance(mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo) -> None:
+def test_binary_sensor_inheritance(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
     """Test that binary sensors inherit from correct base classes."""
     sensor = WattboxStatusBinarySensor(
         coordinator=mock_coordinator,
         device_info=mock_device_info,
         unique_id="test_status_sensor",
     )
-    
+
     assert isinstance(sensor, BinarySensorEntity)
 
 
 def test_wattbox_status_binary_sensor_name(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxStatusBinarySensor name property."""
     sensor = WattboxStatusBinarySensor(
@@ -144,13 +144,12 @@ def test_wattbox_status_binary_sensor_name(
         device_info=mock_device_info,
         unique_id="test_status_sensor",
     )
-    
+
     assert sensor.name == "Device Status"
 
 
 def test_wattbox_status_binary_sensor_device_class(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxStatusBinarySensor device_class property."""
     sensor = WattboxStatusBinarySensor(
@@ -158,5 +157,5 @@ def test_wattbox_status_binary_sensor_device_class(
         device_info=mock_device_info,
         unique_id="test_status_sensor",
     )
-    
+
     assert sensor.device_class == "connectivity"

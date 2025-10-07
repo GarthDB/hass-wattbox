@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components.wattbox.config_flow import CannotConnect, ConfigFlow, InvalidAuth
 from custom_components.wattbox.const import (
-    CONF_POLLING_INTERVAL,
     DEFAULT_PASSWORD,
     DEFAULT_POLLING_INTERVAL,
     DEFAULT_USERNAME,
     DOMAIN,
 )
-from custom_components.wattbox.config_flow import ConfigFlow, CannotConnect, InvalidAuth
 
 
 def test_constants() -> None:
@@ -33,10 +32,10 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    
+
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-    
+
     # Test form submission
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -47,7 +46,7 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
             "polling_interval": 30,
         },
     )
-    
+
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "192.168.1.100"
     assert result2["data"] == {
@@ -65,7 +64,7 @@ async def test_user_flow_cannot_connect(hass: HomeAssistant) -> None:
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
-        
+
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -75,7 +74,7 @@ async def test_user_flow_cannot_connect(hass: HomeAssistant) -> None:
                 "polling_interval": 30,
             },
         )
-        
+
         assert result2["type"] == FlowResultType.FORM
         assert result2["errors"]["base"] == "cannot_connect"
 
@@ -87,7 +86,7 @@ async def test_user_flow_invalid_auth(hass: HomeAssistant) -> None:
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
-        
+
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -97,7 +96,7 @@ async def test_user_flow_invalid_auth(hass: HomeAssistant) -> None:
                 "polling_interval": 30,
             },
         )
-        
+
         assert result2["type"] == FlowResultType.FORM
         assert result2["errors"]["base"] == "invalid_auth"
 
@@ -105,11 +104,13 @@ async def test_user_flow_invalid_auth(hass: HomeAssistant) -> None:
 @pytest.mark.asyncio
 async def test_user_flow_unknown_error(hass: HomeAssistant) -> None:
     """Test user flow with unknown error."""
-    with patch.object(ConfigFlow, "_test_connection", side_effect=Exception("Unknown error")):
+    with patch.object(
+        ConfigFlow, "_test_connection", side_effect=Exception("Unknown error")
+    ):
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
-        
+
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -119,7 +120,7 @@ async def test_user_flow_unknown_error(hass: HomeAssistant) -> None:
                 "polling_interval": 30,
             },
         )
-        
+
         assert result2["type"] == FlowResultType.FORM
         assert result2["errors"]["base"] == "unknown"
 
@@ -130,7 +131,7 @@ async def test_user_flow_validation_errors(hass: HomeAssistant) -> None:
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    
+
     # Test with invalid polling interval (too low)
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -141,7 +142,7 @@ async def test_user_flow_validation_errors(hass: HomeAssistant) -> None:
             "polling_interval": 1,  # Too low
         },
     )
-    
+
     # Should still succeed since validation is handled by voluptuous
     assert result2["type"] == FlowResultType.CREATE_ENTRY
 
@@ -149,7 +150,7 @@ async def test_user_flow_validation_errors(hass: HomeAssistant) -> None:
 def test_test_connection_method() -> None:
     """Test the _test_connection method."""
     config_flow = ConfigFlow()
-    
+
     # Should not raise an exception (currently just passes)
     config_flow._test_connection({"host": "192.168.1.100"})
 
@@ -161,7 +162,7 @@ def test_exception_classes() -> None:
         raise CannotConnect("Test connection error")
     except CannotConnect as e:
         assert str(e) == "Test connection error"
-    
+
     # Test InvalidAuth
     try:
         raise InvalidAuth("Test auth error")

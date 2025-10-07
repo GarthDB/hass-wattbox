@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.components.switch import SwitchEntity
@@ -12,8 +12,8 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.wattbox.switch import (
-    async_setup_entry,
     WattboxSwitch,
+    async_setup_entry,
 )
 
 
@@ -63,7 +63,7 @@ def mock_config_entry() -> ConfigEntry:
 
 @pytest.mark.asyncio
 async def test_async_setup_entry(
-    hass: HomeAssistant, 
+    hass: HomeAssistant,
     mock_config_entry: ConfigEntry,
     mock_coordinator: DataUpdateCoordinator,
     mock_device_info: DeviceInfo,
@@ -72,16 +72,15 @@ async def test_async_setup_entry(
     # Mock the coordinator and device info
     with patch("custom_components.wattbox.switch.async_setup_entry") as mock_setup:
         mock_setup.return_value = True
-        
+
         result = await async_setup_entry(hass, mock_config_entry)
-        
+
         # Since this is a placeholder, it should return True
         assert result is True
 
 
 def test_wattbox_switch_init(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch initialization."""
     switch = WattboxSwitch(
@@ -90,7 +89,7 @@ def test_wattbox_switch_init(
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     assert switch.coordinator == mock_coordinator
     assert switch.device_info == mock_device_info
     assert switch.unique_id == "test_outlet_switch_1"
@@ -98,8 +97,7 @@ def test_wattbox_switch_init(
 
 
 def test_wattbox_switch_name(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch name property."""
     switch = WattboxSwitch(
@@ -108,13 +106,12 @@ def test_wattbox_switch_name(
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     assert switch.name == "Outlet 1"
 
 
 def test_wattbox_switch_is_on(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch is_on property."""
     switch = WattboxSwitch(
@@ -123,15 +120,14 @@ def test_wattbox_switch_is_on(
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     # Currently returns None (TODO implementation)
     assert switch.is_on is None
 
 
 @pytest.mark.asyncio
 async def test_wattbox_switch_async_turn_on(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch async_turn_on method."""
     switch = WattboxSwitch(
@@ -140,15 +136,14 @@ async def test_wattbox_switch_async_turn_on(
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     # Test turning on (currently just passes)
     await switch.async_turn_on()
 
 
 @pytest.mark.asyncio
 async def test_wattbox_switch_async_turn_off(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch async_turn_off method."""
     switch = WattboxSwitch(
@@ -157,14 +152,13 @@ async def test_wattbox_switch_async_turn_off(
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     # Test turning off (currently just passes)
     await switch.async_turn_off()
 
 
 def test_wattbox_switch_outlet_number(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch outlet_number property."""
     switch = WattboxSwitch(
@@ -173,11 +167,13 @@ def test_wattbox_switch_outlet_number(
         unique_id="test_outlet_switch_5",
         outlet_number=5,
     )
-    
+
     assert switch._outlet_number == 5
 
 
-def test_switch_inheritance(mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo) -> None:
+def test_switch_inheritance(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
     """Test that switches inherit from correct base classes."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
@@ -185,13 +181,12 @@ def test_switch_inheritance(mock_coordinator: DataUpdateCoordinator, mock_device
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     assert isinstance(switch, SwitchEntity)
 
 
 def test_wattbox_switch_different_outlets(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxSwitch with different outlet numbers."""
     # Test outlet 1
@@ -201,7 +196,7 @@ def test_wattbox_switch_different_outlets(
         unique_id="test_outlet_switch_1",
         outlet_number=1,
     )
-    
+
     # Test outlet 2
     switch2 = WattboxSwitch(
         coordinator=mock_coordinator,
@@ -209,7 +204,7 @@ def test_wattbox_switch_different_outlets(
         unique_id="test_outlet_switch_2",
         outlet_number=2,
     )
-    
+
     assert switch1._outlet_number == 1
     assert switch2._outlet_number == 2
     assert switch1.unique_id != switch2.unique_id

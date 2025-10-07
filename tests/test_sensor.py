@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.components.sensor import SensorEntity
@@ -12,9 +12,9 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.wattbox.sensor import (
-    async_setup_entry,
-    WattboxVoltageSensor,
     WattboxPowerSensor,
+    WattboxVoltageSensor,
+    async_setup_entry,
 )
 
 
@@ -66,7 +66,7 @@ def mock_config_entry() -> ConfigEntry:
 
 @pytest.mark.asyncio
 async def test_async_setup_entry(
-    hass: HomeAssistant, 
+    hass: HomeAssistant,
     mock_config_entry: ConfigEntry,
     mock_coordinator: DataUpdateCoordinator,
     mock_device_info: DeviceInfo,
@@ -75,16 +75,15 @@ async def test_async_setup_entry(
     # Mock the coordinator and device info
     with patch("custom_components.wattbox.sensor.async_setup_entry") as mock_setup:
         mock_setup.return_value = True
-        
+
         result = await async_setup_entry(hass, mock_config_entry)
-        
+
         # Since this is a placeholder, it should return True
         assert result is True
 
 
 def test_wattbox_voltage_sensor_init(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxVoltageSensor initialization."""
     sensor = WattboxVoltageSensor(
@@ -92,7 +91,7 @@ def test_wattbox_voltage_sensor_init(
         device_info=mock_device_info,
         unique_id="test_voltage_sensor",
     )
-    
+
     assert sensor.coordinator == mock_coordinator
     assert sensor.device_info == mock_device_info
     assert sensor.unique_id == "test_voltage_sensor"
@@ -100,8 +99,7 @@ def test_wattbox_voltage_sensor_init(
 
 
 def test_wattbox_voltage_sensor_native_value(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxVoltageSensor native_value property."""
     sensor = WattboxVoltageSensor(
@@ -109,14 +107,13 @@ def test_wattbox_voltage_sensor_native_value(
         device_info=mock_device_info,
         unique_id="test_voltage_sensor",
     )
-    
+
     # Currently returns None (TODO implementation)
     assert sensor.native_value is None
 
 
 def test_wattbox_voltage_sensor_attributes(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxVoltageSensor attributes."""
     sensor = WattboxVoltageSensor(
@@ -124,14 +121,13 @@ def test_wattbox_voltage_sensor_attributes(
         device_info=mock_device_info,
         unique_id="test_voltage_sensor",
     )
-    
+
     assert sensor.device_class == "voltage"
     assert sensor.native_unit_of_measurement == "V"
 
 
 def test_wattbox_power_sensor_init(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxPowerSensor initialization."""
     sensor = WattboxPowerSensor(
@@ -139,7 +135,7 @@ def test_wattbox_power_sensor_init(
         device_info=mock_device_info,
         unique_id="test_power_sensor",
     )
-    
+
     assert sensor.coordinator == mock_coordinator
     assert sensor.device_info == mock_device_info
     assert sensor.unique_id == "test_power_sensor"
@@ -147,8 +143,7 @@ def test_wattbox_power_sensor_init(
 
 
 def test_wattbox_power_sensor_native_value(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxPowerSensor native_value property."""
     sensor = WattboxPowerSensor(
@@ -156,14 +151,13 @@ def test_wattbox_power_sensor_native_value(
         device_info=mock_device_info,
         unique_id="test_power_sensor",
     )
-    
+
     # Currently returns None (TODO implementation)
     assert sensor.native_value is None
 
 
 def test_wattbox_power_sensor_attributes(
-    mock_coordinator: DataUpdateCoordinator, 
-    mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
 ) -> None:
     """Test WattboxPowerSensor attributes."""
     sensor = WattboxPowerSensor(
@@ -171,24 +165,26 @@ def test_wattbox_power_sensor_attributes(
         device_info=mock_device_info,
         unique_id="test_power_sensor",
     )
-    
+
     assert sensor.device_class == "power"
     assert sensor.native_unit_of_measurement == "W"
 
 
-def test_sensor_inheritance(mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo) -> None:
+def test_sensor_inheritance(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
     """Test that sensors inherit from correct base classes."""
     voltage_sensor = WattboxVoltageSensor(
         coordinator=mock_coordinator,
         device_info=mock_device_info,
         unique_id="test_voltage_sensor",
     )
-    
+
     power_sensor = WattboxPowerSensor(
         coordinator=mock_coordinator,
         device_info=mock_device_info,
         unique_id="test_power_sensor",
     )
-    
+
     assert isinstance(voltage_sensor, SensorEntity)
     assert isinstance(power_sensor, SensorEntity)

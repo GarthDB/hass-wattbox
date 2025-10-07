@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+import pytest_asyncio
 from homeassistant.core import HomeAssistant
 
 from custom_components.wattbox.const import DOMAIN
@@ -30,16 +31,25 @@ def mock_device_info():
     }
 
 
-@pytest.fixture
-def hass() -> HomeAssistant:
+@pytest_asyncio.fixture
+async def hass() -> HomeAssistant:
     """Return a Home Assistant instance."""
-    from homeassistant.core import HomeAssistant
-    from homeassistant.config_entries import ConfigEntry
-    from homeassistant.helpers.entity_registry import EntityRegistry
-    from homeassistant.helpers.device_registry import DeviceRegistry
-
+    import asyncio
+    
+    # Create a new event loop for this test
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
     hass = HomeAssistant("")
     hass.config_entries = MagicMock()
     hass.entity_registry = MagicMock()
     hass.device_registry = MagicMock()
-    return hass
+    
+    # Start the Home Assistant instance
+    await hass.async_start()
+    
+    yield hass
+    
+    # Clean up
+    await hass.async_stop()
+    loop.close()

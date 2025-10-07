@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntry
@@ -32,34 +32,40 @@ def mock_config_entry() -> ConfigEntry:
 
 
 @pytest.mark.asyncio
-async def test_async_setup_entry(hass: HomeAssistant, mock_config_entry: ConfigEntry) -> None:
+async def test_async_setup_entry(
+    hass: HomeAssistant, mock_config_entry: ConfigEntry
+) -> None:
     """Test async_setup_entry."""
     result = await async_setup_entry(hass, mock_config_entry)
-    
+
     assert result is True
     assert DOMAIN in hass.data
 
 
 @pytest.mark.asyncio
-async def test_async_unload_entry(hass: HomeAssistant, mock_config_entry: ConfigEntry) -> None:
+async def test_async_unload_entry(
+    hass: HomeAssistant, mock_config_entry: ConfigEntry
+) -> None:
     """Test async_unload_entry."""
     # First set up the entry
     await async_setup_entry(hass, mock_config_entry)
-    
+
     # Then unload it
     result = await async_unload_entry(hass, mock_config_entry)
-    
+
     assert result is True
 
 
 @pytest.mark.asyncio
-async def test_async_setup_entry_with_existing_data(hass: HomeAssistant, mock_config_entry: ConfigEntry) -> None:
+async def test_async_setup_entry_with_existing_data(
+    hass: HomeAssistant, mock_config_entry: ConfigEntry
+) -> None:
     """Test async_setup_entry when data already exists."""
     # Pre-populate hass.data
     hass.data[DOMAIN] = {"existing": "data"}
-    
+
     result = await async_setup_entry(hass, mock_config_entry)
-    
+
     assert result is True
     assert DOMAIN in hass.data
     # Should preserve existing data
@@ -67,20 +73,24 @@ async def test_async_setup_entry_with_existing_data(hass: HomeAssistant, mock_co
 
 
 @pytest.mark.asyncio
-async def test_async_setup_entry_platforms_disabled(hass: HomeAssistant, mock_config_entry: ConfigEntry) -> None:
+async def test_async_setup_entry_platforms_disabled(
+    hass: HomeAssistant, mock_config_entry: ConfigEntry
+) -> None:
     """Test async_setup_entry when platforms are disabled (TODO sections)."""
     # The current implementation has TODO sections for platform setup
     # This test verifies it doesn't crash
     result = await async_setup_entry(hass, mock_config_entry)
-    
+
     assert result is True
 
 
 @pytest.mark.asyncio
-async def test_async_unload_entry_platforms_disabled(hass: HomeAssistant, mock_config_entry: ConfigEntry) -> None:
+async def test_async_unload_entry_platforms_disabled(
+    hass: HomeAssistant, mock_config_entry: ConfigEntry
+) -> None:
     """Test async_unload_entry when platforms are disabled (TODO sections)."""
     # The current implementation has TODO sections for platform unload
     # This test verifies it doesn't crash
     result = await async_unload_entry(hass, mock_config_entry)
-    
+
     assert result is True
