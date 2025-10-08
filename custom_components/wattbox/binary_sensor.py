@@ -26,7 +26,7 @@ async def async_setup_entry(
 
     # Create connectivity sensor
     sensor = WattboxStatusBinarySensor(coordinator, config_entry.entry_id)
-    async_add_entities([sensor])
+    await async_add_entities([sensor])
 
 
 class WattboxStatusBinarySensor(WattboxDeviceEntity, BinarySensorEntity):

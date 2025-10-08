@@ -1,8 +1,8 @@
-"""Test the Wattbox switch platform."""
+"""Test switch platform for Wattbox integration."""
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.components.switch import SwitchEntity
@@ -18,47 +18,38 @@ from custom_components.wattbox.switch import (
 
 
 @pytest.fixture
+def mock_config_entry() -> ConfigEntry:
+    """Mock config entry for testing."""
+    config_entry = MagicMock(spec=ConfigEntry)
+    config_entry.entry_id = "test_entry_id"
+    config_entry.data = {
+        "host": "192.168.1.100",
+        "username": "test_user",
+        "password": "test_password",
+        "polling_interval": 30,
+    }
+    return config_entry
+
+
+@pytest.fixture
 def mock_coordinator() -> DataUpdateCoordinator:
     """Mock coordinator for testing."""
     coordinator = MagicMock(spec=DataUpdateCoordinator)
     coordinator.data = {
-        "outlets": [
-            {"number": 1, "name": "Outlet 1", "state": 1},
-            {"number": 2, "name": "Outlet 2", "state": 0},
+        "device_info": {
+            "hardware_version": "1.0.0",
+            "model": "WB-800VPS-IPVM-18",
+            "serial_number": "TEST123",
+            "hostname": "test-wattbox",
+        },
+        "outlet_info": [
+            {"state": 1, "name": "Outlet 1"},
+            {"state": 0, "name": "Outlet 2"},
+            {"state": 1, "name": "Outlet 3"},
         ],
     }
+    coordinator.async_set_outlet_state = AsyncMock()
     return coordinator
-
-
-@pytest.fixture
-def mock_device_info() -> DeviceInfo:
-    """Mock device info for testing."""
-    return DeviceInfo(
-        identifiers={("wattbox", "test_device")},
-        name="Test Wattbox",
-        manufacturer="SnapAV",
-        model="WB-800VPS-IPVM-18",
-        sw_version="1.0.0",
-    )
-
-
-@pytest.fixture
-def mock_config_entry() -> ConfigEntry:
-    """Mock config entry for testing."""
-    config_entry = MagicMock(spec=ConfigEntry)
-    config_entry.version = 1
-    config_entry.domain = "wattbox"
-    config_entry.title = "Test Wattbox"
-    config_entry.data = {
-        "host": "192.168.1.100",
-        "username": "wattbox",
-        "password": "wattbox",
-        "polling_interval": 30,
-    }
-    config_entry.source = "user"
-    config_entry.options = {}
-    config_entry.entry_id = "test_entry_id"
-    return config_entry
 
 
 @pytest.mark.asyncio
@@ -66,145 +57,190 @@ async def test_async_setup_entry(
     hass: HomeAssistant,
     mock_config_entry: ConfigEntry,
     mock_coordinator: DataUpdateCoordinator,
-    mock_device_info: DeviceInfo,
 ) -> None:
     """Test async_setup_entry for switch platform."""
-    # Mock the coordinator and device info
-    with patch("custom_components.wattbox.switch.async_setup_entry") as mock_setup:
-        mock_setup.return_value = True
+    # Ensure coordinator has outlet_info data
+    mock_coordinator.data = {
+        "device_info": {
+            "hardware_version": "1.0.0",
+            "model": "WB-800VPS-IPVM-18",
+            "serial_number": "TEST123",
+            "hostname": "test-wattbox",
+        },
+        "outlet_info": [
+            {"state": 1, "name": "Outlet 1"},
+            {"state": 0, "name": "Outlet 2"},
+            {"state": 1, "name": "Outlet 3"},
+        ],
+    }
+    
+    # Mock the coordinator in hass.data
+    hass.data["wattbox"] = {mock_config_entry.entry_id: mock_coordinator}
+    
+    # Create a mock async_add_entities function
+    entities_added = []
+    async def mock_add_entities(entities):
+        entities_added.extend(entities)
 
-        result = await async_setup_entry(hass, mock_config_entry)
+    result = await async_setup_entry(hass, mock_config_entry, mock_add_entities)
 
-        # Since this is a placeholder, it should return True
-        assert result is True
+    # Should return None (no return value)
+    assert result is None
+    
+    # Should have created 3 switches (one for each outlet in mock data)
+    assert len(entities_added) == 3
+    assert all(isinstance(entity, WattboxSwitch) for entity in entities_added)
+    
+    # Verify the switches have correct outlet numbers
+    outlet_numbers = [entity._outlet_number for entity in entities_added]
+    assert outlet_numbers == [1, 2, 3]
 
 
 def test_wattbox_switch_init(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
     """Test WattboxSwitch initialization."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
+        device_info={},
+        unique_id="test_switch_1",
         outlet_number=1,
     )
 
     assert switch.coordinator == mock_coordinator
-    assert switch.device_info == mock_device_info
-    assert switch.unique_id == "test_outlet_switch_1"
+    assert switch.unique_id == "test_switch_1"
+    assert switch.name == "Outlet 1"
+    assert switch.device_class == "outlet"
     assert switch._outlet_number == 1
 
 
-def test_wattbox_switch_name(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
-) -> None:
-    """Test WattboxSwitch name property."""
-    switch = WattboxSwitch(
-        coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
-        outlet_number=1,
-    )
-
-    assert switch.name == "Outlet 1"
-
-
 def test_wattbox_switch_is_on(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
     """Test WattboxSwitch is_on property."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
+        device_info={},
+        unique_id="test_switch_1",
         outlet_number=1,
     )
 
-    # Currently returns None (TODO implementation)
+    # Test with outlet on
+    assert switch.is_on is True
+
+    # Test with outlet off
+    switch._outlet_number = 2
+    assert switch.is_on is False
+
+    # Test with outlet on
+    switch._outlet_number = 3
+    assert switch.is_on is True
+
+    # Test with no outlet data
+    mock_coordinator.data = {"outlet_info": []}
     assert switch.is_on is None
 
 
 @pytest.mark.asyncio
-async def test_wattbox_switch_async_turn_on(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+async def test_wattbox_switch_turn_on(
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
     """Test WattboxSwitch async_turn_on method."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
+        device_info={},
+        unique_id="test_switch_1",
         outlet_number=1,
     )
 
-    # Test turning on (currently just passes)
     await switch.async_turn_on()
+
+    # Should call coordinator's async_set_outlet_state with True
+    mock_coordinator.async_set_outlet_state.assert_called_once_with(1, True)
 
 
 @pytest.mark.asyncio
-async def test_wattbox_switch_async_turn_off(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+async def test_wattbox_switch_turn_off(
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
     """Test WattboxSwitch async_turn_off method."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
+        device_info={},
+        unique_id="test_switch_1",
         outlet_number=1,
     )
 
-    # Test turning off (currently just passes)
     await switch.async_turn_off()
 
+    # Should call coordinator's async_set_outlet_state with False
+    mock_coordinator.async_set_outlet_state.assert_called_once_with(1, False)
 
-def test_wattbox_switch_outlet_number(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+
+def test_wattbox_switch_attributes(
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
-    """Test WattboxSwitch outlet_number property."""
+    """Test WattboxSwitch attributes."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_5",
-        outlet_number=5,
+        device_info={},
+        unique_id="test_switch_1",
+        outlet_number=1,
     )
 
-    assert switch._outlet_number == 5
+    assert switch.device_class == "outlet"
+    assert switch.name == "Outlet 1"
 
 
 def test_switch_inheritance(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
     """Test that switches inherit from correct base classes."""
     switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
+        device_info={},
+        unique_id="test_switch_1",
         outlet_number=1,
     )
 
     assert isinstance(switch, SwitchEntity)
 
 
-def test_wattbox_switch_different_outlets(
-    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+def test_switch_outlet_number_edge_cases(
+    mock_coordinator: DataUpdateCoordinator,
 ) -> None:
-    """Test WattboxSwitch with different outlet numbers."""
-    # Test outlet 1
-    switch1 = WattboxSwitch(
+    """Test switch behavior with edge cases for outlet numbers."""
+    # Test outlet number beyond available outlets
+    switch = WattboxSwitch(
         coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_1",
+        device_info={},
+        unique_id="test_switch_10",
+        outlet_number=10,  # Beyond the 3 outlets in mock data
+    )
+
+    # Should return None when outlet number is beyond available data
+    assert switch.is_on is None
+
+
+@pytest.mark.asyncio
+async def test_switch_coordinator_integration(
+    mock_coordinator: DataUpdateCoordinator,
+) -> None:
+    """Test switch integration with coordinator."""
+    switch = WattboxSwitch(
+        coordinator=mock_coordinator,
+        device_info={},
+        unique_id="test_switch_1",
         outlet_number=1,
     )
 
-    # Test outlet 2
-    switch2 = WattboxSwitch(
-        coordinator=mock_coordinator,
-        device_info=mock_device_info,
-        unique_id="test_outlet_switch_2",
-        outlet_number=2,
-    )
+    # Test turning on
+    await switch.async_turn_on()
+    mock_coordinator.async_set_outlet_state.assert_called_with(1, True)
 
-    assert switch1._outlet_number == 1
-    assert switch2._outlet_number == 2
-    assert switch1.unique_id != switch2.unique_id
+    # Reset mock
+    mock_coordinator.async_set_outlet_state.reset_mock()
+
+    # Test turning off
+    await switch.async_turn_off()
+    mock_coordinator.async_set_outlet_state.assert_called_with(1, False)

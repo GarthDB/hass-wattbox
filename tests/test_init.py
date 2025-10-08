@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.config_entries import ConfigEntry
@@ -36,7 +36,8 @@ async def test_async_setup_entry(
     hass: HomeAssistant, mock_config_entry: ConfigEntry
 ) -> None:
     """Test async_setup_entry."""
-    result = await async_setup_entry(hass, mock_config_entry)
+    with patch("custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh", new_callable=AsyncMock):
+        result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
     assert DOMAIN in hass.data
@@ -48,7 +49,8 @@ async def test_async_unload_entry(
 ) -> None:
     """Test async_unload_entry."""
     # First set up the entry
-    await async_setup_entry(hass, mock_config_entry)
+    with patch("custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh", new_callable=AsyncMock):
+        await async_setup_entry(hass, mock_config_entry)
 
     # Then unload it
     result = await async_unload_entry(hass, mock_config_entry)
@@ -64,7 +66,8 @@ async def test_async_setup_entry_with_existing_data(
     # Pre-populate hass.data
     hass.data[DOMAIN] = {"existing": "data"}
 
-    result = await async_setup_entry(hass, mock_config_entry)
+    with patch("custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh", new_callable=AsyncMock):
+        result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
     assert DOMAIN in hass.data
@@ -79,7 +82,8 @@ async def test_async_setup_entry_platforms_disabled(
     """Test async_setup_entry when platforms are disabled (TODO sections)."""
     # The current implementation has TODO sections for platform setup
     # This test verifies it doesn't crash
-    result = await async_setup_entry(hass, mock_config_entry)
+    with patch("custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh", new_callable=AsyncMock):
+        result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
 
@@ -89,6 +93,11 @@ async def test_async_unload_entry_platforms_disabled(
     hass: HomeAssistant, mock_config_entry: ConfigEntry
 ) -> None:
     """Test async_unload_entry when platforms are disabled (TODO sections)."""
+    # Set up the data first
+    mock_coordinator = MagicMock()
+    mock_coordinator.async_disconnect = AsyncMock()
+    hass.data[DOMAIN] = {mock_config_entry.entry_id: mock_coordinator}
+    
     # The current implementation has TODO sections for platform unload
     # This test verifies it doesn't crash
     result = await async_unload_entry(hass, mock_config_entry)

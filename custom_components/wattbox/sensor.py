@@ -6,6 +6,7 @@ import logging
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfElectricPotential, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -32,7 +33,14 @@ async def async_setup_entry(
         WattboxHostnameSensor(coordinator, config_entry.entry_id),
     ]
 
-    async_add_entities(sensors)
+    # Create power monitoring sensors
+    power_sensors = [
+        WattboxVoltageSensor(coordinator, config_entry.entry_id),
+        WattboxCurrentSensor(coordinator, config_entry.entry_id),
+        WattboxPowerSensor(coordinator, config_entry.entry_id),
+    ]
+
+    await async_add_entities(sensors + power_sensors)
 
 
 class WattboxFirmwareSensor(WattboxDeviceEntity, SensorEntity):
@@ -113,3 +121,63 @@ class WattboxHostnameSensor(WattboxDeviceEntity, SensorEntity):
         """Return the hostname value."""
         device_info = self.coordinator.data.get("device_info", {})
         return device_info.get("hostname")
+
+
+class WattboxVoltageSensor(WattboxDeviceEntity, SensorEntity):
+    """Representation of a Wattbox voltage sensor."""
+
+    def __init__(
+        self,
+        coordinator: WattboxDataUpdateCoordinator,
+        entry_id: str,
+    ) -> None:
+        """Initialize the voltage sensor."""
+        super().__init__(coordinator, {}, f"{entry_id}_voltage")
+        self._attr_name = "Voltage"
+        self._attr_native_unit_of_measurement = UnitOfElectricPotential.VOLT
+        self._attr_device_class = "voltage"
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the voltage value."""
+        return self.coordinator.data.get("voltage")
+
+
+class WattboxCurrentSensor(WattboxDeviceEntity, SensorEntity):
+    """Representation of a Wattbox current sensor."""
+
+    def __init__(
+        self,
+        coordinator: WattboxDataUpdateCoordinator,
+        entry_id: str,
+    ) -> None:
+        """Initialize the current sensor."""
+        super().__init__(coordinator, {}, f"{entry_id}_current")
+        self._attr_name = "Current"
+        self._attr_native_unit_of_measurement = "A"  # Amperes
+        self._attr_device_class = "current"
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the current value."""
+        return self.coordinator.data.get("current")
+
+
+class WattboxPowerSensor(WattboxDeviceEntity, SensorEntity):
+    """Representation of a Wattbox power sensor."""
+
+    def __init__(
+        self,
+        coordinator: WattboxDataUpdateCoordinator,
+        entry_id: str,
+    ) -> None:
+        """Initialize the power sensor."""
+        super().__init__(coordinator, {}, f"{entry_id}_power")
+        self._attr_name = "Power"
+        self._attr_native_unit_of_measurement = UnitOfPower.WATT
+        self._attr_device_class = "power"
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the power value."""
+        return self.coordinator.data.get("power")

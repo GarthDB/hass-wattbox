@@ -19,7 +19,14 @@ from custom_components.wattbox.entity import (
 def mock_coordinator() -> DataUpdateCoordinator:
     """Mock coordinator for testing."""
     coordinator = MagicMock(spec=DataUpdateCoordinator)
-    coordinator.data = {"test": "data"}
+    coordinator.data = {
+        "device_info": {
+            "serial_number": "test_device",
+            "hostname": "Test Wattbox",
+            "model": "WB-800VPS-IPVM-18",
+            "hardware_version": "1.0.0",
+        }
+    }
     return coordinator
 
 
@@ -46,8 +53,17 @@ def test_wattbox_entity_init(
     )
 
     assert entity.coordinator == mock_coordinator
-    assert entity.device_info == mock_device_info
     assert entity.unique_id == "test_unique_id"
+    
+    # Check that device info is built from coordinator data
+    expected_device_info = DeviceInfo(
+        identifiers={("wattbox", "test_device")},
+        name="Test Wattbox",
+        manufacturer="SnapAV",
+        model="WB-800VPS-IPVM-18",
+        sw_version="1.0.0",
+    )
+    assert entity.device_info == expected_device_info
 
 
 def test_wattbox_device_entity_init(
@@ -61,8 +77,17 @@ def test_wattbox_device_entity_init(
     )
 
     assert entity.coordinator == mock_coordinator
-    assert entity.device_info == mock_device_info
     assert entity.unique_id == "test_device_unique_id"
+    
+    # Check that device info is built from coordinator data
+    expected_device_info = DeviceInfo(
+        identifiers={("wattbox", "test_device")},
+        name="Test Wattbox",
+        manufacturer="SnapAV",
+        model="WB-800VPS-IPVM-18",
+        sw_version="1.0.0",
+    )
+    assert entity.device_info == expected_device_info
 
 
 def test_wattbox_outlet_entity_init(
@@ -77,9 +102,18 @@ def test_wattbox_outlet_entity_init(
     )
 
     assert entity.coordinator == mock_coordinator
-    assert entity.device_info == mock_device_info
     assert entity.unique_id == "test_outlet_unique_id"
     assert entity._outlet_number == 1
+    
+    # Check that device info is built from coordinator data
+    expected_device_info = DeviceInfo(
+        identifiers={("wattbox", "test_device")},
+        name="Test Wattbox",
+        manufacturer="SnapAV",
+        model="WB-800VPS-IPVM-18",
+        sw_version="1.0.0",
+    )
+    assert entity.device_info == expected_device_info
 
 
 def test_wattbox_entity_device_info(
@@ -92,7 +126,15 @@ def test_wattbox_entity_device_info(
         unique_id="test_unique_id",
     )
 
-    assert entity.device_info == mock_device_info
+    # Check that device info is built from coordinator data
+    expected_device_info = DeviceInfo(
+        identifiers={("wattbox", "test_device")},
+        name="Test Wattbox",
+        manufacturer="SnapAV",
+        model="WB-800VPS-IPVM-18",
+        sw_version="1.0.0",
+    )
+    assert entity.device_info == expected_device_info
 
 
 def test_wattbox_entity_should_poll(
@@ -149,4 +191,12 @@ def test_wattbox_entity_coordinator_data(
     )
 
     # Should be able to access coordinator data
-    assert entity.coordinator.data == {"test": "data"}
+    expected_data = {
+        "device_info": {
+            "serial_number": "test_device",
+            "hostname": "Test Wattbox",
+            "model": "WB-800VPS-IPVM-18",
+            "hardware_version": "1.0.0",
+        }
+    }
+    assert entity.coordinator.data == expected_data

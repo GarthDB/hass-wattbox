@@ -39,7 +39,7 @@ async def async_setup_entry(
         )
         switches.append(switch)
 
-    async_add_entities(switches)
+    await async_add_entities(switches)
 
 
 class WattboxSwitch(WattboxOutletEntity, SwitchEntity):

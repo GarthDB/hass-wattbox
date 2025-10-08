@@ -50,9 +50,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         try:
-            # TODO: Validate connection to device
-            # await self._test_connection(user_input)
-            pass
+            await self._test_connection(user_input)
         except CannotConnect:
             errors["base"] = "cannot_connect"
         except InvalidAuth:

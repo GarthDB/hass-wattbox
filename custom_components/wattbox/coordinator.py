@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -37,7 +38,7 @@ class WattboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=polling_interval,
+            update_interval=timedelta(seconds=polling_interval),
         )
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -53,9 +54,15 @@ class WattboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Get outlet status (assuming 18 outlets for 800 series)
             outlet_info = await self.telnet_client.async_get_outlet_status(18)
 
+            # Get power metrics via HTTP
+            power_metrics = await self.telnet_client.async_get_power_metrics()
+
             return {
                 "device_info": device_info,
                 "outlet_info": outlet_info,
+                "voltage": power_metrics.get("voltage"),
+                "current": power_metrics.get("current"),
+                "power": power_metrics.get("power"),
                 "connected": True,
             }
 
