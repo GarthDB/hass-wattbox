@@ -19,7 +19,7 @@ safety>=2.3.0
 vulture>=2.7.0
 
 # Home Assistant testing (minimal)
-pytest-homeassistant-custom-component>=0.13.0
+pytest-homeassistant-custom-component>=0.12.49
 
 # Wattbox integration dependencies
 telnetlib3>=2.0.0
