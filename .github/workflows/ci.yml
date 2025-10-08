@@ -33,6 +33,10 @@ jobs:
         pip install --upgrade setuptools wheel
         pip install -r requirements-test.txt
     
+    - name: Install Home Assistant (minimal)
+      run: |
+        pip install --no-deps homeassistant>=2024.12.0
+    
     - name: Lint with flake8
       run: |
         flake8 custom_components/wattbox tests/
@@ -63,7 +67,7 @@ jobs:
     
     - name: Test with pytest
       run: |
-        pytest tests/ --cov=custom_components/wattbox --cov-report=xml --cov-report=html --cov-fail-under=80
+        pytest tests/ --cov=custom_components/wattbox --cov-report=xml --cov-report=html --cov-fail-under=80 --tb=short
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
