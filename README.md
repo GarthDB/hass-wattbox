@@ -1,8 +1,15 @@
 # Home Assistant Wattbox Integration
 
+[![CI](https://github.com/GarthDB/hass-wattbox/workflows/CI/badge.svg)](https://github.com/GarthDB/hass-wattbox/actions)
+[![codecov](https://codecov.io/gh/GarthDB/hass-wattbox/branch/main/graph/badge.svg)](https://codecov.io/gh/GarthDB/hass-wattbox)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2023.1.0+-blue.svg)](https://www.home-assistant.io/)
+[![HACS](https://img.shields.io/badge/HACS-Custom-red.svg)](https://hacs.xyz/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A modern Home Assistant integration for SnapAV Wattbox 800 series power management devices using telnet communication.
 
-> **Status**: ✅ Production Ready - 100% test coverage with 94.41% code coverage
+> **Status**: ✅ Production Ready - See coverage badge above for current test coverage
 
 ## Features
 
@@ -82,15 +89,44 @@ A modern Home Assistant integration for SnapAV Wattbox 800 series power manageme
 
 ```bash
 # Clone the repository
-git clone https://github.com/garthdb/hass-wattbox.git
+git clone https://github.com/GarthDB/hass-wattbox.git
 cd hass-wattbox
 
 # Install development dependencies
 pip install -r requirements-dev.txt
 
 # Run tests
-pytest tests/
+make test
+
+# Run all checks (linting, formatting, tests)
+make check-all
+
+# Format code
+make format
 ```
+
+### Local CI Testing
+
+This project includes `act` CLI support for local GitHub Actions testing:
+
+```bash
+# Test the full CI pipeline locally
+act -j test
+
+# Test specific Python versions
+act -j test -P ubuntu-latest=catthehacker/ubuntu:act-latest
+```
+
+### Development Tools
+
+This project includes comprehensive development tooling:
+
+- **Pre-commit Hooks**: Automated code formatting and linting
+- **Makefile**: Common development commands (`make test`, `make lint`, `make format`)
+- **Local CI Testing**: `act` CLI for testing GitHub Actions locally
+- **Code Quality**: Black, isort, flake8, mypy, bandit, safety, vulture
+- **Testing**: pytest with comprehensive test coverage
+- **CI/CD**: GitHub Actions with multi-Python version testing
 
 ### Project Structure
 
@@ -108,7 +144,9 @@ hass-wattbox/
 │       ├── switch.py
 │       └── binary_sensor.py
 ├── tests/
-├── docs/
+├── .github/workflows/
+├── .pre-commit-config.yaml
+├── Makefile
 ├── requirements-dev.txt
 ├── pyproject.toml
 └── README.md
