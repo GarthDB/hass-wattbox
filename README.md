@@ -146,3 +146,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Basic outlet control
 - Power monitoring
 - HACS compatibility
+# Test CI/CD
