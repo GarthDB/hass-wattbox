@@ -33,7 +33,9 @@ except ImportError:
     sys.modules["homeassistant.const"] = homeassistant.const
     sys.modules["homeassistant.helpers"] = homeassistant.helpers
     sys.modules["homeassistant.helpers.frame"] = homeassistant.helpers.frame
-    sys.modules["homeassistant.helpers.entity_platform"] = homeassistant.helpers.entity_platform
+    sys.modules["homeassistant.helpers.entity_platform"] = (
+        homeassistant.helpers.entity_platform
+    )
     # Add external dependencies
     sys.modules["voluptuous"] = voluptuous
 
