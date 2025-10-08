@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.wattbox.sensor import (
@@ -74,12 +73,13 @@ async def test_async_setup_entry(
         "current": 1.2,
         "power": 144.6,
     }
-    
+
     # Mock the coordinator in hass.data
     hass.data["wattbox"] = {mock_config_entry.entry_id: mock_coordinator}
-    
+
     # Create a mock async_add_entities function
     entities_added = []
+
     async def mock_add_entities(entities):
         entities_added.extend(entities)
 
@@ -87,7 +87,7 @@ async def test_async_setup_entry(
 
     # Should return None (no return value)
     assert result is None
-    
+
     # Should have created 7 sensors (4 device info + 3 power monitoring)
     assert len(entities_added) == 7
 
@@ -327,12 +327,12 @@ def test_sensor_inheritance(
         coordinator=mock_coordinator,
         entry_id="test_entry_id",
     )
-    
+
     current_sensor = WattboxCurrentSensor(
         coordinator=mock_coordinator,
         entry_id="test_entry_id",
     )
-    
+
     power_sensor = WattboxPowerSensor(
         coordinator=mock_coordinator,
         entry_id="test_entry_id",

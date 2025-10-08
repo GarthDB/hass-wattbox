@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.wattbox.switch import (
@@ -73,12 +72,13 @@ async def test_async_setup_entry(
             {"state": 1, "name": "Outlet 3"},
         ],
     }
-    
+
     # Mock the coordinator in hass.data
     hass.data["wattbox"] = {mock_config_entry.entry_id: mock_coordinator}
-    
+
     # Create a mock async_add_entities function
     entities_added = []
+
     async def mock_add_entities(entities):
         entities_added.extend(entities)
 
@@ -86,11 +86,11 @@ async def test_async_setup_entry(
 
     # Should return None (no return value)
     assert result is None
-    
+
     # Should have created 3 switches (one for each outlet in mock data)
     assert len(entities_added) == 3
     assert all(isinstance(entity, WattboxSwitch) for entity in entities_added)
-    
+
     # Verify the switches have correct outlet numbers
     outlet_numbers = [entity._outlet_number for entity in entities_added]
     assert outlet_numbers == [1, 2, 3]

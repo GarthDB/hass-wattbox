@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -70,7 +70,7 @@ async def test_async_setup_entry(
     """Test async_setup_entry for binary sensor platform."""
     # Mock the coordinator in hass.data
     hass.data[DOMAIN] = {mock_config_entry.entry_id: mock_coordinator}
-    
+
     # Create a mock async_add_entities function
     async def mock_add_entities(entities):
         pass

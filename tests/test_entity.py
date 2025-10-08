@@ -54,7 +54,7 @@ def test_wattbox_entity_init(
 
     assert entity.coordinator == mock_coordinator
     assert entity.unique_id == "test_unique_id"
-    
+
     # Check that device info is built from coordinator data
     expected_device_info = DeviceInfo(
         identifiers={("wattbox", "test_device")},
@@ -78,7 +78,7 @@ def test_wattbox_device_entity_init(
 
     assert entity.coordinator == mock_coordinator
     assert entity.unique_id == "test_device_unique_id"
-    
+
     # Check that device info is built from coordinator data
     expected_device_info = DeviceInfo(
         identifiers={("wattbox", "test_device")},
@@ -104,7 +104,7 @@ def test_wattbox_outlet_entity_init(
     assert entity.coordinator == mock_coordinator
     assert entity.unique_id == "test_outlet_unique_id"
     assert entity._outlet_number == 1
-    
+
     # Check that device info is built from coordinator data
     expected_device_info = DeviceInfo(
         identifiers={("wattbox", "test_device")},

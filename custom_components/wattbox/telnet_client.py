@@ -74,9 +74,7 @@ class WattboxTelnetClient:
         """Connect to the Wattbox device."""
         try:
             self._reader, self._writer = await asyncio.wait_for(
-                telnetlib3.open_connection(
-                    self._host, self._port
-                ),
+                telnetlib3.open_connection(self._host, self._port),
                 timeout=self._timeout,
             )
             _LOGGER.debug("Connected to %s:%s", self._host, self._port)
@@ -221,7 +219,9 @@ class WattboxTelnetClient:
         except Exception as e:
             _LOGGER.warning("Failed to get auto reboot setting: %s", e)
 
-    async def async_get_outlet_status(self, num_outlets: int = 18) -> list[dict[str, Any]]:
+    async def async_get_outlet_status(
+        self, num_outlets: int = 18
+    ) -> list[dict[str, Any]]:
         """Get outlet status information."""
         if not self._connected:
             await self.async_connect()
@@ -244,10 +244,12 @@ class WattboxTelnetClient:
             # to get the outlet status response
             await self.async_send_command("?Firmware")  # Dummy command
             response = await self.async_send_command(TELNET_CMD_OUTLET_STATUS)
-            
+
             # The response should contain the outlet status
             # Look for both ?OutletStatus and ~OutletStatus (after control commands)
-            if "=" in response and ("OutletStatus" in response or "~OutletStatus" in response):
+            if "=" in response and (
+                "OutletStatus" in response or "~OutletStatus" in response
+            ):
                 outlet_states = response.split("=")[1].split(",")
                 for i, state in enumerate(outlet_states):
                     if i < len(self._device_data["outlet_info"]):
@@ -262,7 +264,7 @@ class WattboxTelnetClient:
             # to get the outlet names response
             await self.async_send_command("?Firmware")  # Dummy command
             response = await self.async_send_command(TELNET_CMD_OUTLET_NAME)
-            
+
             # The response should contain the outlet names
             if "=" in response and "OutletName" in response:
                 outlet_names = response.split("=")[1].split(",")
@@ -282,13 +284,21 @@ class WattboxTelnetClient:
         command = f"{TELNET_CMD_OUTLET_SET}={outlet_number},{'ON' if state else 'OFF'}"
         try:
             await self.async_send_command(command)
-            _LOGGER.debug("Set outlet %d to %s", outlet_number, "ON" if state else "OFF")
-            
+            _LOGGER.debug(
+                "Set outlet %d to %s", outlet_number, "ON" if state else "OFF"
+            )
+
             # Update the internal state directly since we know what we set
             if 1 <= outlet_number <= len(self._device_data["outlet_info"]):
-                self._device_data["outlet_info"][outlet_number - 1]["state"] = 1 if state else 0
-                _LOGGER.debug("Updated internal state for outlet %d to %d", outlet_number, 1 if state else 0)
-            
+                self._device_data["outlet_info"][outlet_number - 1]["state"] = (
+                    1 if state else 0
+                )
+                _LOGGER.debug(
+                    "Updated internal state for outlet %d to %d",
+                    outlet_number,
+                    1 if state else 0,
+                )
+
         except Exception as e:
             _LOGGER.error("Failed to set outlet %d state: %s", outlet_number, e)
             raise
@@ -305,19 +315,16 @@ class WattboxTelnetClient:
 
     async def async_get_power_metrics(self) -> dict[str, Any]:
         """Get power metrics (voltage, current, power) via HTTP.
-        
+
         Note: Currently returns placeholder values as HTTP authentication
         is not working with the device. This can be extended later when
         the correct authentication method is determined.
         """
         _LOGGER.debug("Power monitoring requested - returning placeholder values")
-        _LOGGER.info("Power monitoring not yet implemented - HTTP authentication failing")
-        
+        _LOGGER.info(
+            "Power monitoring not yet implemented - HTTP authentication failing"
+        )
+
         # Return placeholder values for now
         # TODO: Implement proper HTTP power monitoring when authentication is resolved
-        return {
-            "voltage": None,
-            "current": None, 
-            "power": None
-        }
-    
+        return {"voltage": None, "current": None, "power": None}
