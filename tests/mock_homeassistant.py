@@ -20,6 +20,15 @@ class FlowResultType(Enum):
     MENU = "menu"
 
 
+class FlowResult:
+    """Mock FlowResult class."""
+
+    def __init__(self, flow_id: str, type: FlowResultType, data: dict = None):
+        self.flow_id = flow_id
+        self.type = type
+        self.data = data or {}
+
+
 class HomeAssistant:
     """Mock HomeAssistant class."""
 
@@ -189,7 +198,7 @@ class MockVoluptuous:
 homeassistant = MockModule(
     core=MockModule(HomeAssistant=HomeAssistant),
     config_entries=MockModule(ConfigEntry=ConfigEntry),
-    data_entry_flow=MockModule(FlowResultType=FlowResultType),
+    data_entry_flow=MockModule(FlowResultType=FlowResultType, FlowResult=FlowResult),
     const=MockModule(
         Platform=Platform,
         UnitOfElectricPotential=UnitOfElectricPotential,
