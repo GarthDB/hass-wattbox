@@ -195,15 +195,25 @@ def test_wattbox_power_lost_binary_sensor_is_on(
     )
 
     # Test when power is lost
-    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": True}}}
+    mock_coordinator.data = {
+        "connected": True,
+        "status_info": {"ups_status": {"power_lost": True}},
+    }
     assert sensor.is_on is True
 
     # Test when power is not lost
-    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": False}}}
+    mock_coordinator.data = {
+        "connected": True,
+        "status_info": {"ups_status": {"power_lost": False}},
+    }
     assert sensor.is_on is False
 
+    # Test when not connected
+    mock_coordinator.data = {"connected": False}
+    assert sensor.is_on is None
+
     # Test when no status data
-    mock_coordinator.data = {}
+    mock_coordinator.data = {"connected": True}
     assert sensor.is_on is False
 
 
@@ -233,15 +243,25 @@ def test_wattbox_safe_voltage_binary_sensor_is_on(
     )
 
     # Test when voltage is safe (1)
-    mock_coordinator.data = {"status_info": {"power_status": {"safe_voltage": 1}}}
+    mock_coordinator.data = {
+        "connected": True,
+        "status_info": {"power_status": {"safe_voltage": 1}},
+    }
     assert sensor.is_on is True
 
     # Test when voltage is not safe (0)
-    mock_coordinator.data = {"status_info": {"power_status": {"safe_voltage": 0}}}
+    mock_coordinator.data = {
+        "connected": True,
+        "status_info": {"power_status": {"safe_voltage": 0}},
+    }
     assert sensor.is_on is False
 
+    # Test when not connected
+    mock_coordinator.data = {"connected": False}
+    assert sensor.is_on is None
+
     # Test when no status data
-    mock_coordinator.data = {}
+    mock_coordinator.data = {"connected": True}
     assert sensor.is_on is None
 
 
@@ -271,15 +291,19 @@ def test_wattbox_ups_connected_binary_sensor_is_on(
     )
 
     # Test when UPS is connected
-    mock_coordinator.data = {"status_info": {"ups_connected": True}}
+    mock_coordinator.data = {"connected": True, "status_info": {"ups_connected": True}}
     assert sensor.is_on is True
 
     # Test when UPS is not connected
-    mock_coordinator.data = {"status_info": {"ups_connected": False}}
+    mock_coordinator.data = {"connected": True, "status_info": {"ups_connected": False}}
     assert sensor.is_on is False
 
+    # Test when not connected
+    mock_coordinator.data = {"connected": False}
+    assert sensor.is_on is None
+
     # Test when no status data
-    mock_coordinator.data = {}
+    mock_coordinator.data = {"connected": True}
     assert sensor.is_on is False
 
 
@@ -309,13 +333,23 @@ def test_wattbox_ups_power_lost_binary_sensor_is_on(
     )
 
     # Test when UPS power is lost
-    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": True}}}
+    mock_coordinator.data = {
+        "connected": True,
+        "status_info": {"ups_status": {"power_lost": True}},
+    }
     assert sensor.is_on is True
 
     # Test when UPS power is not lost
-    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": False}}}
+    mock_coordinator.data = {
+        "connected": True,
+        "status_info": {"ups_status": {"power_lost": False}},
+    }
     assert sensor.is_on is False
 
+    # Test when not connected
+    mock_coordinator.data = {"connected": False}
+    assert sensor.is_on is None
+
     # Test when no status data
-    mock_coordinator.data = {}
+    mock_coordinator.data = {"connected": True}
     assert sensor.is_on is False

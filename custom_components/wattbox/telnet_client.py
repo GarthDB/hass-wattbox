@@ -195,11 +195,35 @@ class WattboxTelnetClient:
         """Get firmware information."""
         try:
             response = await self.async_send_command(TELNET_CMD_FIRMWARE)
-            self._device_data["device_info"]["hardware_version"] = (
-                response.split("=")[1] if "=" in response else None
-            )
+            if "=" in response:
+                firmware_data = response.split("=")[1].strip()
+                # Parse firmware data - format is typically
+                # "version,revision,status,flag1,flag2,flag3,flag4"
+                # We want just the version and revision for display
+                if firmware_data and firmware_data != "0,0,Good,False,0,False,False":
+                    parts = firmware_data.split(",")
+                    if len(parts) >= 2:
+                        version = parts[0].strip()
+                        revision = parts[1].strip()
+                        if version and revision and version != "0" and revision != "0":
+                            self._device_data["device_info"][
+                                "hardware_version"
+                            ] = f"{version}.{revision}"
+                        else:
+                            self._device_data["device_info"][
+                                "hardware_version"
+                            ] = "Unknown"
+                    else:
+                        self._device_data["device_info"][
+                            "hardware_version"
+                        ] = firmware_data
+                else:
+                    self._device_data["device_info"]["hardware_version"] = "Unknown"
+            else:
+                self._device_data["device_info"]["hardware_version"] = None
         except Exception as e:
             _LOGGER.warning("Failed to get firmware info: %s", e)
+            self._device_data["device_info"]["hardware_version"] = None
 
     async def _get_model_info(self) -> None:
         """Get model information."""

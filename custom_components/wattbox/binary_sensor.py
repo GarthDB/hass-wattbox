@@ -71,6 +71,8 @@ class WattboxPowerLostBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if power has been lost."""
+        if not self.coordinator.data.get("connected", False):
+            return None
         status_info = self.coordinator.data.get("status_info", {})
         ups_status = status_info.get("ups_status", {})
         return ups_status.get("power_lost", False)
@@ -92,6 +94,8 @@ class WattboxSafeVoltageBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if voltage is safe."""
+        if not self.coordinator.data.get("connected", False):
+            return None
         status_info = self.coordinator.data.get("status_info", {})
         power_status = status_info.get("power_status", {})
         safe_voltage = power_status.get("safe_voltage")
@@ -114,6 +118,8 @@ class WattboxUPSConnectedBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if UPS is connected."""
+        if not self.coordinator.data.get("connected", False):
+            return None
         status_info = self.coordinator.data.get("status_info", {})
         return status_info.get("ups_connected", False)
 
@@ -134,6 +140,8 @@ class WattboxUPSPowerLostBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return true if UPS has lost power."""
+        if not self.coordinator.data.get("connected", False):
+            return None
         status_info = self.coordinator.data.get("status_info", {})
         ups_status = status_info.get("ups_status", {})
         return ups_status.get("power_lost", False)
