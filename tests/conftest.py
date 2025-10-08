@@ -19,11 +19,19 @@ except ImportError:
     sys.modules['homeassistant.config_entries'] = homeassistant.config_entries
     sys.modules['homeassistant.data_entry_flow'] = homeassistant.data_entry_flow
     sys.modules['homeassistant.helpers.entity'] = homeassistant.helpers.entity
-    sys.modules['homeassistant.helpers.update_coordinator'] = homeassistant.helpers.update_coordinator
-    sys.modules['homeassistant.components.binary_sensor'] = homeassistant.components.binary_sensor
-    sys.modules['homeassistant.components.sensor'] = homeassistant.components.sensor
-    sys.modules['homeassistant.components.switch'] = homeassistant.components.switch
-    
+    sys.modules['homeassistant.helpers.update_coordinator'] = (
+        homeassistant.helpers.update_coordinator
+    )
+    sys.modules['homeassistant.components.binary_sensor'] = (
+        homeassistant.components.binary_sensor
+    )
+    sys.modules['homeassistant.components.sensor'] = (
+        homeassistant.components.sensor
+    )
+    sys.modules['homeassistant.components.switch'] = (
+        homeassistant.components.switch
+    )
+
     from homeassistant.core import HomeAssistant
 
 from custom_components.wattbox.const import DOMAIN
