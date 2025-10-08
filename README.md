@@ -1,7 +1,7 @@
 # Home Assistant Wattbox Integration
 
-[![CI](https://github.com/GarthDB/hass-wattbox/workflows/CI/badge.svg)](https://github.com/GarthDB/hass-wattbox/actions)
-[![codecov](https://codecov.io/gh/GarthDB/hass-wattbox/branch/main/graph/badge.svg)](https://codecov.io/gh/GarthDB/hass-wattbox)
+[![CI](https://github.com/GarthDB/ha-wattbox/workflows/CI/badge.svg)](https://github.com/GarthDB/ha-wattbox/actions)
+[![codecov](https://codecov.io/gh/GarthDB/ha-wattbox/branch/main/graph/badge.svg)](https://codecov.io/gh/GarthDB/ha-wattbox)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2023.1.0+-blue.svg)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom-red.svg)](https://hacs.xyz/)
@@ -89,8 +89,8 @@ A modern Home Assistant integration for SnapAV Wattbox 800 series power manageme
 
 ```bash
 # Clone the repository
-git clone https://github.com/GarthDB/hass-wattbox.git
-cd hass-wattbox
+git clone https://github.com/GarthDB/ha-wattbox.git
+cd ha-wattbox
 
 # Install development dependencies
 pip install -r requirements-dev.txt
@@ -131,7 +131,7 @@ This project includes comprehensive development tooling:
 ### Project Structure
 
 ```
-hass-wattbox/
+ha-wattbox/
 ├── custom_components/
 │   └── wattbox/
 │       ├── __init__.py
@@ -172,8 +172,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/garthdb/hass-wattbox/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/garthdb/hass-wattbox/discussions)
+- **Issues**: [GitHub Issues](https://github.com/garthdb/ha-wattbox/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/garthdb/ha-wattbox/discussions)
 - **Home Assistant Community**: [Community Forum](https://community.home-assistant.io/)
 
 ## Changelog

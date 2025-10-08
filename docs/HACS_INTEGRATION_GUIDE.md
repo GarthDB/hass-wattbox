@@ -65,8 +65,8 @@ Must include these minimum keys:
 {
   "domain": "wattbox",
   "name": "Wattbox",
-  "documentation": "https://github.com/yourusername/hass-wattbox",
-  "issue_tracker": "https://github.com/yourusername/hass-wattbox/issues",
+  "documentation": "https://github.com/yourusername/ha-wattbox",
+  "issue_tracker": "https://github.com/yourusername/ha-wattbox/issues",
   "codeowners": ["@yourusername"],
   "version": "1.0.0",
   "requirements": [],

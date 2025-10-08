@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hass-wattbox"
+name = "ha-wattbox"
 version = "0.1.0"
 description = "Home Assistant integration for SnapAV Wattbox 800 series devices"
 readme = "README.md"
@@ -28,10 +28,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/garthdb/hass-wattbox"
-Repository = "https://github.com/garthdb/hass-wattbox.git"
-Issues = "https://github.com/garthdb/hass-wattbox/issues"
-Documentation = "https://github.com/garthdb/hass-wattbox#readme"
+Homepage = "https://github.com/garthdb/ha-wattbox"
+Repository = "https://github.com/garthdb/ha-wattbox.git"
+Issues = "https://github.com/garthdb/ha-wattbox/issues"
+Documentation = "https://github.com/garthdb/ha-wattbox#readme"
 
 [project.optional-dependencies]
 dev = [

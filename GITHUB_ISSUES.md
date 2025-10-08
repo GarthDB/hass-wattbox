@@ -1,4 +1,4 @@
-# GitHub Issues for hass-wattbox Project
+# GitHub Issues for ha-wattbox Project
 
 ## 🏗️ Epic 1: Core Infrastructure
 
