@@ -13,6 +13,7 @@ from .const import (
     TELNET_CMD_FIRMWARE,
     TELNET_CMD_HOSTNAME,
     TELNET_CMD_MODEL,
+    TELNET_CMD_OUTLET_COUNT,
     TELNET_CMD_OUTLET_NAME,
     TELNET_CMD_OUTLET_SET,
     TELNET_CMD_OUTLET_STATUS,
@@ -219,12 +220,36 @@ class WattboxTelnetClient:
         except Exception as e:
             _LOGGER.warning("Failed to get auto reboot setting: %s", e)
 
+    async def _get_outlet_count(self) -> int:
+        """Get the number of outlets on the device."""
+        try:
+            # First command returns empty, second command returns the first command's response
+            await self.async_send_command(TELNET_CMD_OUTLET_COUNT)  # This returns empty
+            response = await self.async_send_command(
+                "?Firmware"
+            )  # This returns the outlet count
+
+            if "=" in response and "OutletCount" in response:
+                count = int(response.split("=")[1])
+                _LOGGER.debug("Device has %d outlets", count)
+                return count
+            else:
+                _LOGGER.warning("Could not get outlet count, defaulting to 12")
+                return 12
+        except Exception as e:
+            _LOGGER.warning("Failed to get outlet count: %s, defaulting to 12", e)
+            return 12
+
     async def async_get_outlet_status(
-        self, num_outlets: int = 18
+        self, num_outlets: int = None
     ) -> list[dict[str, Any]]:
         """Get outlet status information."""
         if not self._connected:
             await self.async_connect()
+
+        # Get the actual number of outlets from the device if not specified
+        if num_outlets is None:
+            num_outlets = await self._get_outlet_count()
 
         # Initialize outlet info if not already done
         if not self._device_data["outlet_info"]:
@@ -240,39 +265,70 @@ class WattboxTelnetClient:
     async def _get_outlet_states(self) -> None:
         """Get outlet states."""
         try:
-            # Due to device's one-command delay, we need to send a dummy command first
+            # The device has a command delay - each command returns the response
+            # from the previous command. We need to send a dummy command first
             # to get the outlet status response
-            await self.async_send_command("?Firmware")  # Dummy command
-            response = await self.async_send_command(TELNET_CMD_OUTLET_STATUS)
+            await self.async_send_command("?Firmware")  # This returns empty
+            await self.async_send_command(
+                TELNET_CMD_OUTLET_STATUS
+            )  # This returns the outlet status
+            response = await self.async_send_command(
+                "?Firmware"
+            )  # This returns the outlet status
 
-            # The response should contain the outlet status
-            # Look for both ?OutletStatus and ~OutletStatus (after control commands)
-            if "=" in response and (
-                "OutletStatus" in response or "~OutletStatus" in response
-            ):
+            _LOGGER.debug("Outlet status response: %s", response)
+
+            # The outlet status comes back as the response to the second dummy command
+            if "=" in response and "OutletStatus" in response:
                 outlet_states = response.split("=")[1].split(",")
-                for i, state in enumerate(outlet_states):
-                    if i < len(self._device_data["outlet_info"]):
-                        self._device_data["outlet_info"][i]["state"] = int(state)
+                _LOGGER.debug("Parsed outlet states: %s", outlet_states)
+
+                # Process only the number of outlets we have
+                num_outlets = min(
+                    len(outlet_states), len(self._device_data["outlet_info"])
+                )
+                for i in range(num_outlets):
+                    self._device_data["outlet_info"][i]["state"] = int(outlet_states[i])
+                    _LOGGER.debug(
+                        "Set outlet %d state to %d", i + 1, int(outlet_states[i])
+                    )
+            else:
+                _LOGGER.warning("No valid outlet status response found: %s", response)
         except Exception as e:
             _LOGGER.warning("Failed to get outlet status: %s", e)
 
     async def _get_outlet_names(self) -> None:
         """Get outlet names."""
         try:
-            # Due to device's one-command delay, we need to send a dummy command first
+            # The device has a command delay - each command returns the response
+            # from the previous command. We need to send a dummy command first
             # to get the outlet names response
-            await self.async_send_command("?Firmware")  # Dummy command
-            response = await self.async_send_command(TELNET_CMD_OUTLET_NAME)
+            await self.async_send_command("?Firmware")  # This returns empty
+            await self.async_send_command(
+                TELNET_CMD_OUTLET_NAME
+            )  # This returns the outlet names
+            response = await self.async_send_command(
+                "?Firmware"
+            )  # This returns the outlet names
+
+            _LOGGER.debug("Outlet names response: %s", response)
 
             # The response should contain the outlet names
             if "=" in response and "OutletName" in response:
                 outlet_names = response.split("=")[1].split(",")
-                for i, name in enumerate(outlet_names):
-                    if i < len(self._device_data["outlet_info"]):
-                        # Clean up the name (remove braces)
-                        clean_name = name.replace("{", "").replace("}", "")
-                        self._device_data["outlet_info"][i]["name"] = clean_name
+                _LOGGER.debug("Parsed outlet names: %s", outlet_names)
+
+                # Process only the number of outlets we have
+                num_outlets = min(
+                    len(outlet_names), len(self._device_data["outlet_info"])
+                )
+                for i in range(num_outlets):
+                    # Clean up the name (remove braces)
+                    clean_name = outlet_names[i].replace("{", "").replace("}", "")
+                    self._device_data["outlet_info"][i]["name"] = clean_name
+                    _LOGGER.debug("Set outlet %d name to %s", i + 1, clean_name)
+            else:
+                _LOGGER.warning("No valid outlet names response found: %s", response)
         except Exception as e:
             _LOGGER.warning("Failed to get outlet names: %s", e)
 

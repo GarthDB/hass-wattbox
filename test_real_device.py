@@ -8,9 +8,14 @@ This script will:
 4. Test all functionality with real device
 
 Usage:
-    python test_real_device.py --host 192.168.1.34 --username garthdb --password FE@7bc3YHE86q!cb
-    # Or use config file:
+    # Set environment variables:
+    export WATTBOX_TEST_HOST=192.168.1.100
+    export WATTBOX_TEST_USERNAME=wattbox
+    export WATTBOX_TEST_PASSWORD=your_password
     python test_real_device.py
+    
+    # Or use command line arguments:
+    python test_real_device.py --host 192.168.1.100 --username wattbox --password your_password
 """
 
 import argparse

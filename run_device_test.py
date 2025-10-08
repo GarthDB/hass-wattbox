@@ -4,6 +4,10 @@
 import asyncio
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add the custom component to the path
 sys.path.insert(0, str(Path(__file__).parent / "custom_components"))
@@ -14,49 +18,49 @@ from wattbox.telnet_client import WattboxTelnetClient
 async def test_device():
     """Test connection to your actual Wattbox device."""
     print("🔌 Testing connection to Wattbox device...")
-    
-    # Your actual device config
+
+    # Load device config from environment variables
+    import os
     client = WattboxTelnetClient(
-        host="192.168.1.34",
-        username="garthdb", 
-        password="FE@7bc3YHE86q!cb"
+        host=os.getenv("WATTBOX_TEST_HOST", "192.168.1.100"),
+        username=os.getenv("WATTBOX_TEST_USERNAME", "wattbox"),
+        password=os.getenv("WATTBOX_TEST_PASSWORD", "your_password_here")
     )
-    
+
     try:
         # Test connection
         print("📡 Connecting...")
         await client.async_connect()
         print("✅ Connected successfully!")
-        
+
         # Get device info
         print("📊 Getting device information...")
         device_info = await client.async_get_device_info()
         print(f"Device Info: {device_info}")
-        
+
         # Get outlet status
         print("🔌 Getting outlet status...")
-        outlet_info = await client.async_get_outlet_status(18)
+        outlet_info = await client.async_get_outlet_status()  # Let it auto-detect the count
         print(f"Found {len(outlet_info)} outlets:")
-        for i, outlet in enumerate(outlet_info[:5]):  # Show first 5
-            print(f"  Outlet {i+1}: {outlet['name']} - {'ON' if outlet['state'] else 'OFF'}")
-        if len(outlet_info) > 5:
-            print(f"  ... and {len(outlet_info) - 5} more outlets")
-        
+        for i, outlet in enumerate(outlet_info):
+            status = "ON" if outlet['state'] else "OFF"
+            print(f"  Outlet {i+1:2d}: {outlet['name']:12s} - {status}")
+
         # Test outlet control (safe - just set to current state)
         if outlet_info:
             current_state = bool(outlet_info[0]['state'])
             print(f"🔧 Testing outlet control (outlet 1, current state: {current_state})...")
             await client.async_set_outlet_state(1, current_state)
             print("✅ Outlet control test completed")
-        
+
         # Disconnect
         print("🔌 Disconnecting...")
         await client.async_disconnect()
         print("✅ Disconnected successfully!")
-        
+
         print("\n🎉 All tests passed! Your device is working correctly.")
         return True
-        
+
     except Exception as e:
         print(f"❌ Test failed: {e}")
         return False

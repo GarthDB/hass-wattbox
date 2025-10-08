@@ -1,0 +1,90 @@
+{
+  "timestamp": "2025-10-08T15:37:53.354011",
+  "device_info": {
+    "hardware_version": null,
+    "model": "2.8.0.0",
+    "serial_number": "WB-800-IPVM-12",
+    "hostname": "ST201916431G842A",
+    "auto_reboot": "WattBox"
+  },
+  "outlet_info": [
+    {
+      "state": 0,
+      "name": "Outlet 1"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 2"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 3"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 4"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 5"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 6"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 7"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 8"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 9"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 10"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 11"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 12"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 13"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 14"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 15"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 16"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 17"
+    },
+    {
+      "state": 0,
+      "name": "Outlet 18"
+    }
+  ],
+  "commands_responses": [],
+  "test_results": {
+    "connection": "SUCCESS",
+    "outlet_control": "SUCCESS",
+    "disconnection": "SUCCESS"
+  }
+}

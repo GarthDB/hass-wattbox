@@ -6,13 +6,18 @@ DO NOT commit this file to version control with real credentials.
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Test device configuration
-# You can set these via environment variables or edit this file directly
+# Set these via environment variables or create a .env file
+# DO NOT hardcode credentials in this file
 WATTBOX_TEST_CONFIG = {
-    "host": os.getenv("WATTBOX_TEST_HOST", "192.168.1.34"),  # Your actual device IP
-    "username": os.getenv("WATTBOX_TEST_USERNAME", "garthdb"),
-    "password": os.getenv("WATTBOX_TEST_PASSWORD", "FE@7bc3YHE86q!cb"),
+    "host": os.getenv("WATTBOX_TEST_HOST", "192.168.1.100"),  # Default example IP
+    "username": os.getenv("WATTBOX_TEST_USERNAME", "wattbox"),  # Default example username
+    "password": os.getenv("WATTBOX_TEST_PASSWORD", "your_password_here"),  # Set via env var
     "port": int(os.getenv("WATTBOX_TEST_PORT", "23")),
     "timeout": int(os.getenv("WATTBOX_TEST_TIMEOUT", "10")),
     "scan_interval": int(os.getenv("WATTBOX_TEST_SCAN_INTERVAL", "20")),  # seconds
