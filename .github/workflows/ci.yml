@@ -1,6 +1,6 @@
 name: CI
 
-# Updated to fix Python version issue
+# Fixed Python version matrix - using supported versions only
 on:
   push:
     branches: [ main, develop ]
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9, 3.10, 3.11, 3.12]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
     - uses: actions/checkout@v3
