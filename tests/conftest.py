@@ -14,7 +14,7 @@ except ImportError:
     # Use our mock Home Assistant module
     import sys
 
-    from .mock_homeassistant import homeassistant
+    from .mock_homeassistant import homeassistant, voluptuous
 
     sys.modules["homeassistant"] = homeassistant
     sys.modules["homeassistant.core"] = homeassistant.core
@@ -33,6 +33,9 @@ except ImportError:
     sys.modules["homeassistant.const"] = homeassistant.const
     sys.modules["homeassistant.helpers"] = homeassistant.helpers
     sys.modules["homeassistant.helpers.frame"] = homeassistant.helpers.frame
+    sys.modules["homeassistant.helpers.entity_platform"] = homeassistant.helpers.entity_platform
+    # Add external dependencies
+    sys.modules["voluptuous"] = voluptuous
 
     from homeassistant.core import HomeAssistant
 

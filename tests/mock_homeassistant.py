@@ -139,6 +139,16 @@ class Platform:
     SWITCH = "switch"
 
 
+class UnitOfElectricPotential:
+    """Mock UnitOfElectricPotential enum."""
+    VOLT = "V"
+
+
+class UnitOfPower:
+    """Mock UnitOfPower enum."""
+    WATT = "W"
+
+
 class MockFrame:
     """Mock frame module."""
 
@@ -147,18 +157,42 @@ class MockFrame:
         pass
 
 
+class AddEntitiesCallback:
+    """Mock AddEntitiesCallback type."""
+    pass
+
+
+class CoordinatorEntity:
+    """Mock CoordinatorEntity class."""
+    pass
+
+
+class MockVoluptuous:
+    """Mock voluptuous module."""
+    def __getattr__(self, name):
+        """Mock any voluptuous attribute."""
+        return lambda *args, **kwargs: None
+
+
 # Mock the homeassistant module structure
 homeassistant = MockModule(
     core=MockModule(HomeAssistant=HomeAssistant),
     config_entries=MockModule(ConfigEntry=ConfigEntry),
     data_entry_flow=MockModule(FlowResultType=FlowResultType),
-    const=MockModule(Platform=Platform),
+    const=MockModule(
+        Platform=Platform,
+        UnitOfElectricPotential=UnitOfElectricPotential,
+        UnitOfPower=UnitOfPower,
+    ),
     helpers=MockModule(
         entity=MockModule(DeviceInfo=DeviceInfo),
         update_coordinator=MockModule(
-            DataUpdateCoordinator=DataUpdateCoordinator, UpdateFailed=UpdateFailed
+            DataUpdateCoordinator=DataUpdateCoordinator, 
+            UpdateFailed=UpdateFailed,
+            CoordinatorEntity=CoordinatorEntity,
         ),
         frame=MockFrame(),
+        entity_platform=MockModule(AddEntitiesCallback=AddEntitiesCallback),
     ),
     components=MockModule(
         binary_sensor=MockModule(BinarySensorEntity=BinarySensorEntity),
@@ -166,3 +200,6 @@ homeassistant = MockModule(
         switch=MockModule(SwitchEntity=SwitchEntity),
     ),
 )
+
+# Mock external dependencies
+voluptuous = MockVoluptuous()
