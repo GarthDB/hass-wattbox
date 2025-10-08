@@ -134,13 +134,12 @@ homeassistant = MockModule(
     helpers=MockModule(
         entity=MockModule(DeviceInfo=DeviceInfo),
         update_coordinator=MockModule(
-            DataUpdateCoordinator=DataUpdateCoordinator,
-            UpdateFailed=UpdateFailed
-        )
+            DataUpdateCoordinator=DataUpdateCoordinator, UpdateFailed=UpdateFailed
+        ),
     ),
     components=MockModule(
         binary_sensor=MockModule(BinarySensorEntity=BinarySensorEntity),
         sensor=MockModule(SensorEntity=SensorEntity),
-        switch=MockModule(SwitchEntity=SwitchEntity)
-    )
+        switch=MockModule(SwitchEntity=SwitchEntity),
+    ),
 )
