@@ -31,6 +31,12 @@ TELNET_CMD_HOSTNAME: Final[str] = "?Hostname"
 TELNET_CMD_OUTLET_STATUS: Final[str] = "?OutletStatus"
 TELNET_CMD_OUTLET_NAME: Final[str] = "?OutletName"
 TELNET_CMD_AUTO_REBOOT: Final[str] = "?AutoReboot"
+TELNET_CMD_MUTE: Final[str] = "?Mute"
+TELNET_CMD_SAFE_VOLTAGE: Final[str] = "?SafeVoltage"
+
+# HTTP endpoints (for power monitoring)
+HTTP_ENDPOINT_STATUS: Final[str] = "/status.xml"
+HTTP_ENDPOINT_MAIN: Final[str] = "/"
 
 # Telnet control commands
 TELNET_CMD_OUTLET_SET: Final[str] = "!OutletSet"
