@@ -67,6 +67,18 @@ class ConfigEntry:
         self.reason = kwargs.get("reason")
 
 
+class ConfigFlow:
+    """Mock ConfigFlow class."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __init_subclass__(cls, domain=None, **kwargs):
+        """Mock __init_subclass__ to handle domain parameter."""
+        cls.domain = domain
+        super().__init_subclass__(**kwargs)
+
+
 class DeviceInfo:
     """Mock DeviceInfo class."""
 
@@ -203,7 +215,7 @@ class MockVoluptuous:
 # Mock the homeassistant module structure
 homeassistant = MockModule(
     core=MockModule(HomeAssistant=HomeAssistant),
-    config_entries=MockModule(ConfigEntry=ConfigEntry),
+    config_entries=MockModule(ConfigEntry=ConfigEntry, ConfigFlow=ConfigFlow),
     data_entry_flow=MockModule(FlowResultType=FlowResultType, FlowResult=FlowResult),
     exceptions=MockModule(HomeAssistantError=HomeAssistantError),
     const=MockModule(
