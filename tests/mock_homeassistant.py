@@ -112,6 +112,12 @@ class UpdateFailed(Exception):
     pass
 
 
+class HomeAssistantError(Exception):
+    """Mock HomeAssistantError exception."""
+
+    pass
+
+
 class BinarySensorEntity:
     """Mock BinarySensorEntity class."""
 
@@ -199,6 +205,7 @@ homeassistant = MockModule(
     core=MockModule(HomeAssistant=HomeAssistant),
     config_entries=MockModule(ConfigEntry=ConfigEntry),
     data_entry_flow=MockModule(FlowResultType=FlowResultType, FlowResult=FlowResult),
+    exceptions=MockModule(HomeAssistantError=HomeAssistantError),
     const=MockModule(
         Platform=Platform,
         UnitOfElectricPotential=UnitOfElectricPotential,

@@ -20,6 +20,7 @@ except ImportError:
     sys.modules["homeassistant.core"] = homeassistant.core
     sys.modules["homeassistant.config_entries"] = homeassistant.config_entries
     sys.modules["homeassistant.data_entry_flow"] = homeassistant.data_entry_flow
+    sys.modules["homeassistant.exceptions"] = homeassistant.exceptions
     sys.modules["homeassistant.helpers.entity"] = homeassistant.helpers.entity
     sys.modules["homeassistant.helpers.update_coordinator"] = (
         homeassistant.helpers.update_coordinator
