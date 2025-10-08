@@ -92,6 +92,10 @@ class DataUpdateCoordinator:
         """Mock async_request_refresh."""
         pass
 
+    def __class_getitem__(self, item):
+        """Support generic type parameters like DataUpdateCoordinator[dict[str, Any]]."""
+        return self
+
 
 class UpdateFailed(Exception):
     """Mock UpdateFailed exception."""
