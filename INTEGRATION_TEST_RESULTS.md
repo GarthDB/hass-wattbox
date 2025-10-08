@@ -2,7 +2,7 @@
 
 **Date**: October 8, 2025  
 **Device**: SnapAV Wattbox WB-800-IPVM-12  
-**Host**: 192.168.1.34  
+**Host**: [REDACTED - Use environment variables]  
 **Status**: ✅ **COMPLETED**
 
 ## 🎯 **Acceptance Criteria Status**

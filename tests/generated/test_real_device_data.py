@@ -146,7 +146,7 @@ class TestRealDeviceData:
             mock_writer.write = MagicMock()
             mock_writer.drain = AsyncMock()
 
-            client = WattboxTelnetClient("192.168.1.34", "garthdb", "test_password")
+            client = WattboxTelnetClient("192.168.1.100", "testuser", "test_password")
 
             # Test connection
             await client.async_connect()

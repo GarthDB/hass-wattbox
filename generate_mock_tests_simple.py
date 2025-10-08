@@ -131,7 +131,7 @@ class TestRealDeviceData:
                 b"\\n",  # Outlet names response
             ]
             
-            client = WattboxTelnetClient("192.168.1.34", "garthdb", "test_password")
+            client = WattboxTelnetClient("192.168.1.100", "testuser", "test_password")
             
             # Test connection
             await client.async_connect()

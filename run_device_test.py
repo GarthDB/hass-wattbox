@@ -4,6 +4,10 @@
 import asyncio
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add the custom component to the path
 sys.path.insert(0, str(Path(__file__).parent / "custom_components"))
@@ -15,11 +19,12 @@ async def test_device():
     """Test connection to your actual Wattbox device."""
     print("🔌 Testing connection to Wattbox device...")
     
-    # Your actual device config
+    # Load device config from environment variables
+    import os
     client = WattboxTelnetClient(
-        host="192.168.1.34",
-        username="garthdb", 
-        password="FE@7bc3YHE86q!cb"
+        host=os.getenv("WATTBOX_TEST_HOST", "192.168.1.100"),
+        username=os.getenv("WATTBOX_TEST_USERNAME", "wattbox"), 
+        password=os.getenv("WATTBOX_TEST_PASSWORD", "your_password_here")
     )
     
     try:

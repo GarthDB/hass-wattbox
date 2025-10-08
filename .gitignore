@@ -141,3 +141,11 @@ Thumbs.db
 
 # Home Assistant
 .homeassistant/
+
+# Security - Sensitive configuration files
+.env
+.env.local
+.env.*.local
+*_credentials.json
+*_secrets.json
+test_device_config.json
