@@ -23,6 +23,29 @@ DEFAULT_PASSWORD: Final[str] = "wattbox"
 TELNET_PORT: Final[int] = 23
 TELNET_TIMEOUT: Final[int] = 10
 
+# Telnet commands
+TELNET_CMD_FIRMWARE: Final[str] = "?Firmware"
+TELNET_CMD_MODEL: Final[str] = "?Model"
+TELNET_CMD_SERVICE_TAG: Final[str] = "?ServiceTag"
+TELNET_CMD_HOSTNAME: Final[str] = "?Hostname"
+TELNET_CMD_OUTLET_STATUS: Final[str] = "?OutletStatus"
+TELNET_CMD_OUTLET_NAME: Final[str] = "?OutletName"
+TELNET_CMD_AUTO_REBOOT: Final[str] = "?AutoReboot"
+TELNET_CMD_MUTE: Final[str] = "?Mute"
+TELNET_CMD_SAFE_VOLTAGE: Final[str] = "?SafeVoltage"
+
+# HTTP endpoints (for power monitoring)
+HTTP_ENDPOINT_STATUS: Final[str] = "/status.xml"
+HTTP_ENDPOINT_MAIN: Final[str] = "/"
+
+# Telnet control commands
+TELNET_CMD_OUTLET_SET: Final[str] = "!OutletSet"
+
+# Telnet prompts
+TELNET_USERNAME_PROMPT: Final[str] = "Username: "
+TELNET_PASSWORD_PROMPT: Final[str] = "Password: "
+TELNET_LOGIN_SUCCESS: Final[str] = "Successfully Logged In!"
+
 # Device information
 DEVICE_MANUFACTURER: Final[str] = "SnapAV"
 DEVICE_MODEL: Final[str] = "Wattbox 800 Series"

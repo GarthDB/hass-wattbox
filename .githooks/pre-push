@@ -1,0 +1,14 @@
+#!/bin/bash
+# Git pre-push hook to run checks before pushing
+
+echo "🔍 Running pre-push checks..."
+
+# Run the local test script
+./scripts/test-local.sh
+
+if [ $? -ne 0 ]; then
+    echo "❌ Pre-push checks failed. Please fix the issues before pushing."
+    exit 1
+fi
+
+echo "✅ Pre-push checks passed. Proceeding with push."

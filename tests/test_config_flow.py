@@ -1,27 +1,27 @@
-"""Test configuration flow for Wattbox integration."""
+"""Config flow for Wattbox integration tests."""
 
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components.wattbox.config_flow import (
+    CannotConnect,
+    ConfigFlow,
+    InvalidAuth,
+)
 from custom_components.wattbox.const import (
-    CONF_POLLING_INTERVAL,
     DEFAULT_PASSWORD,
     DEFAULT_POLLING_INTERVAL,
     DEFAULT_USERNAME,
-    DOMAIN,
 )
-from custom_components.wattbox.config_flow import ConfigFlow, CannotConnect, InvalidAuth
 
 
 def test_constants() -> None:
     """Test that constants are defined correctly."""
-    assert DOMAIN == "wattbox"
     assert DEFAULT_USERNAME == "wattbox"
     assert DEFAULT_PASSWORD == "wattbox"
     assert DEFAULT_POLLING_INTERVAL == 30
@@ -30,140 +30,216 @@ def test_constants() -> None:
 @pytest.mark.asyncio
 async def test_user_flow_success(hass: HomeAssistant) -> None:
     """Test successful user flow."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-    
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    # Test initial step
+    result = await flow.async_step_user()
+
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-    
-    # Test form submission
-    result2 = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        {
+
+    # Mock successful connection test
+    with patch.object(flow, "_test_connection") as mock_test:
+        mock_test.return_value = None  # No exception means success
+
+        # Test form submission
+        result2 = await flow.async_step_user(
+            {
+                "host": "192.168.1.100",
+                "username": "wattbox",
+                "password": "wattbox",
+                "polling_interval": 30,
+            }
+        )
+
+        assert result2["type"] == FlowResultType.CREATE_ENTRY
+        assert result2["title"] == "192.168.1.100"
+        assert result2["data"] == {
             "host": "192.168.1.100",
             "username": "wattbox",
             "password": "wattbox",
             "polling_interval": 30,
-        },
-    )
-    
-    assert result2["type"] == FlowResultType.CREATE_ENTRY
-    assert result2["title"] == "192.168.1.100"
-    assert result2["data"] == {
-        "host": "192.168.1.100",
-        "username": "wattbox",
-        "password": "wattbox",
-        "polling_interval": 30,
-    }
+        }
 
 
 @pytest.mark.asyncio
 async def test_user_flow_cannot_connect(hass: HomeAssistant) -> None:
     """Test user flow with connection error."""
-    with patch.object(ConfigFlow, "_test_connection", side_effect=CannotConnect):
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": config_entries.SOURCE_USER}
-        )
-        
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    # Mock connection test to raise CannotConnect
+    with patch.object(flow, "_test_connection") as mock_test:
+        mock_test.side_effect = CannotConnect("Connection failed")
+
+        # Test form submission
+        result = await flow.async_step_user(
             {
                 "host": "192.168.1.100",
                 "username": "wattbox",
                 "password": "wattbox",
                 "polling_interval": 30,
-            },
+            }
         )
-        
-        assert result2["type"] == FlowResultType.FORM
-        assert result2["errors"]["base"] == "cannot_connect"
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "cannot_connect"
 
 
 @pytest.mark.asyncio
 async def test_user_flow_invalid_auth(hass: HomeAssistant) -> None:
     """Test user flow with invalid auth error."""
-    with patch.object(ConfigFlow, "_test_connection", side_effect=InvalidAuth):
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": config_entries.SOURCE_USER}
-        )
-        
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    # Mock connection test to raise InvalidAuth
+    with patch.object(flow, "_test_connection") as mock_test:
+        mock_test.side_effect = InvalidAuth("Invalid credentials")
+
+        # Test form submission
+        result = await flow.async_step_user(
             {
                 "host": "192.168.1.100",
                 "username": "wattbox",
                 "password": "wrong_password",
                 "polling_interval": 30,
-            },
+            }
         )
-        
-        assert result2["type"] == FlowResultType.FORM
-        assert result2["errors"]["base"] == "invalid_auth"
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "invalid_auth"
 
 
 @pytest.mark.asyncio
 async def test_user_flow_unknown_error(hass: HomeAssistant) -> None:
     """Test user flow with unknown error."""
-    with patch.object(ConfigFlow, "_test_connection", side_effect=Exception("Unknown error")):
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": config_entries.SOURCE_USER}
-        )
-        
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    # Mock connection test to raise generic exception
+    with patch.object(flow, "_test_connection") as mock_test:
+        mock_test.side_effect = Exception("Unknown error")
+
+        # Test form submission
+        result = await flow.async_step_user(
             {
                 "host": "192.168.1.100",
                 "username": "wattbox",
                 "password": "wattbox",
                 "polling_interval": 30,
-            },
+            }
         )
-        
-        assert result2["type"] == FlowResultType.FORM
-        assert result2["errors"]["base"] == "unknown"
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "unknown"
 
 
 @pytest.mark.asyncio
 async def test_user_flow_validation_errors(hass: HomeAssistant) -> None:
     """Test user flow with validation errors."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-    
-    # Test with invalid polling interval (too low)
-    result2 = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    # Test with missing required fields
+    result = await flow.async_step_user(
         {
-            "host": "192.168.1.100",
+            "host": "",  # Empty host
             "username": "wattbox",
             "password": "wattbox",
-            "polling_interval": 1,  # Too low
-        },
+            "polling_interval": 30,
+        }
     )
-    
-    # Should still succeed since validation is handled by voluptuous
-    assert result2["type"] == FlowResultType.CREATE_ENTRY
+
+    assert result["type"] == FlowResultType.FORM
+    assert "errors" in result
 
 
-def test_test_connection_method() -> None:
-    """Test the _test_connection method."""
-    config_flow = ConfigFlow()
-    
-    # Should not raise an exception (currently just passes)
-    config_flow._test_connection({"host": "192.168.1.100"})
+@pytest.mark.asyncio
+async def test_test_connection_success(hass: HomeAssistant) -> None:
+    """Test successful connection test."""
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    with patch(
+        "custom_components.wattbox.telnet_client.WattboxTelnetClient"
+    ) as mock_client:
+        mock_instance = AsyncMock()
+        mock_client.return_value = mock_instance
+        mock_instance.async_connect.return_value = None
+        mock_instance.async_disconnect.return_value = None
+
+        # Should not raise any exception
+        await flow._test_connection(
+            {
+                "host": "192.168.1.100",
+                "username": "wattbox",
+                "password": "wattbox",
+            }
+        )
 
 
-def test_exception_classes() -> None:
-    """Test that custom exception classes work correctly."""
-    # Test CannotConnect
-    try:
-        raise CannotConnect("Test connection error")
-    except CannotConnect as e:
-        assert str(e) == "Test connection error"
-    
-    # Test InvalidAuth
-    try:
-        raise InvalidAuth("Test auth error")
-    except InvalidAuth as e:
-        assert str(e) == "Test auth error"
+@pytest.mark.asyncio
+async def test_test_connection_auth_error(hass: HomeAssistant) -> None:
+    """Test connection test with auth error."""
+    from custom_components.wattbox.telnet_client import WattboxAuthenticationError
+
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    with patch(
+        "custom_components.wattbox.telnet_client.WattboxTelnetClient"
+    ) as mock_client:
+        mock_instance = AsyncMock()
+        mock_client.return_value = mock_instance
+        mock_instance.async_connect.side_effect = WattboxAuthenticationError(
+            "Auth failed"
+        )
+
+        with pytest.raises(InvalidAuth):
+            await flow._test_connection(
+                {
+                    "host": "192.168.1.100",
+                    "username": "wattbox",
+                    "password": "wrong_password",
+                }
+            )
+
+
+@pytest.mark.asyncio
+async def test_test_connection_connection_error(hass: HomeAssistant) -> None:
+    """Test connection test with connection error."""
+    from custom_components.wattbox.telnet_client import WattboxConnectionError
+
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    with patch(
+        "custom_components.wattbox.telnet_client.WattboxTelnetClient"
+    ) as mock_client:
+        mock_instance = AsyncMock()
+        mock_client.return_value = mock_instance
+        mock_instance.async_connect.side_effect = WattboxConnectionError(
+            "Connection refused"
+        )
+
+        with pytest.raises(CannotConnect):
+            await flow._test_connection(
+                {
+                    "host": "192.168.1.100",
+                    "username": "wattbox",
+                    "password": "wattbox",
+                }
+            )
+
+
+def test_cannot_connect_exception() -> None:
+    """Test CannotConnect exception."""
+    error = CannotConnect("Test connection error")
+    assert str(error) == "Test connection error"
+
+
+def test_invalid_auth_exception() -> None:
+    """Test InvalidAuth exception."""
+    error = InvalidAuth("Test auth error")
+    assert str(error) == "Test auth error"

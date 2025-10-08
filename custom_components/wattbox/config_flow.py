@@ -50,9 +50,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         try:
-            # TODO: Validate connection to device
-            # await self._test_connection(user_input)
-            pass
+            await self._test_connection(user_input)
         except CannotConnect:
             errors["base"] = "cannot_connect"
         except InvalidAuth:
@@ -70,9 +68,30 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _test_connection(self, user_input: dict[str, Any]) -> None:
         """Test connection to the device."""
-        # TODO: Implement actual connection test
-        # This will be implemented when we create the telnet client
-        pass
+        from .telnet_client import (
+            WattboxAuthenticationError,
+            WattboxConnectionError,
+            WattboxTelnetClient,
+        )
+
+        telnet_client = WattboxTelnetClient(
+            host=user_input[CONF_HOST],
+            username=user_input[CONF_USERNAME],
+            password=user_input[CONF_PASSWORD],
+        )
+
+        try:
+            await telnet_client.async_connect()
+            await telnet_client.async_disconnect()
+        except WattboxAuthenticationError as err:
+            _LOGGER.error("Authentication failed: %s", err)
+            raise InvalidAuth from err
+        except WattboxConnectionError as err:
+            _LOGGER.error("Connection failed: %s", err)
+            raise CannotConnect from err
+        except Exception as err:
+            _LOGGER.error("Unexpected error during connection test: %s", err)
+            raise CannotConnect from err
 
 
 class CannotConnect(HomeAssistantError):

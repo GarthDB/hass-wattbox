@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import DOMAIN
+from .coordinator import WattboxDataUpdateCoordinator
 from .entity import WattboxDeviceEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,9 +22,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox binary sensor entities."""
-    # TODO: Implement binary sensor setup
-    # This will be implemented when we create the coordinator and telnet client
-    pass
+    coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+
+    # Create connectivity sensor
+    sensor = WattboxStatusBinarySensor(coordinator, config_entry.entry_id)
+    await async_add_entities([sensor])
 
 
 class WattboxStatusBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
@@ -31,17 +34,15 @@ class WattboxStatusBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
 
     def __init__(
         self,
-        coordinator: Any,
-        device_info: Any,
-        unique_id: str,
+        coordinator: WattboxDataUpdateCoordinator,
+        entry_id: str,
     ) -> None:
         """Initialize the status binary sensor."""
-        super().__init__(coordinator, device_info, unique_id)
+        super().__init__(coordinator, {}, f"{entry_id}_status")
         self._attr_name = "Device Status"
         self._attr_device_class = "connectivity"
 
     @property
     def is_on(self) -> bool | None:
         """Return true if the device is online."""
-        # TODO: Implement status reading from coordinator
-        return None
+        return self.coordinator.data.get("connected", False)
