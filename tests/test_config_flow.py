@@ -54,7 +54,7 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
         )
 
         assert result2["type"] == FlowResultType.CREATE_ENTRY
-        assert result2["title"] == "192.168.1.100"
+        assert result2["title"] == "Wattbox 192.168.1.100"
         assert result2["data"] == {
             "host": "192.168.1.100",
             "username": "wattbox",
