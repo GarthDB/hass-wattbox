@@ -75,7 +75,7 @@ class WattboxTelnetClient:
         try:
             self._reader, self._writer = await asyncio.wait_for(
                 telnetlib3.open_connection(
-                    self._host, self._port, shell=False
+                    self._host, self._port
                 ),
                 timeout=self._timeout,
             )
