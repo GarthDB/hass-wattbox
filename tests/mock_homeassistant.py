@@ -141,11 +141,13 @@ class Platform:
 
 class UnitOfElectricPotential:
     """Mock UnitOfElectricPotential enum."""
+
     VOLT = "V"
 
 
 class UnitOfPower:
     """Mock UnitOfPower enum."""
+
     WATT = "W"
 
 
@@ -159,16 +161,19 @@ class MockFrame:
 
 class AddEntitiesCallback:
     """Mock AddEntitiesCallback type."""
+
     pass
 
 
 class CoordinatorEntity:
     """Mock CoordinatorEntity class."""
+
     pass
 
 
 class MockVoluptuous:
     """Mock voluptuous module."""
+
     def __getattr__(self, name):
         """Mock any voluptuous attribute."""
         return lambda *args, **kwargs: None
@@ -187,7 +192,7 @@ homeassistant = MockModule(
     helpers=MockModule(
         entity=MockModule(DeviceInfo=DeviceInfo),
         update_coordinator=MockModule(
-            DataUpdateCoordinator=DataUpdateCoordinator, 
+            DataUpdateCoordinator=DataUpdateCoordinator,
             UpdateFailed=UpdateFailed,
             CoordinatorEntity=CoordinatorEntity,
         ),
