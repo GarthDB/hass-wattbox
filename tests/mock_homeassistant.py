@@ -201,7 +201,9 @@ class AddEntitiesCallback:
 class CoordinatorEntity:
     """Mock CoordinatorEntity class."""
 
-    pass
+    def __init__(self, coordinator):
+        """Mock __init__ method that accepts coordinator parameter."""
+        self.coordinator = coordinator
 
 
 class MockVoluptuous:
