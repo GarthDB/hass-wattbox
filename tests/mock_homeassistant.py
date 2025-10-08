@@ -151,6 +151,12 @@ class UnitOfPower:
     WATT = "W"
 
 
+# Mock configuration constants
+CONF_HOST = "host"
+CONF_PASSWORD = "password"
+CONF_USERNAME = "username"
+
+
 class MockFrame:
     """Mock frame module."""
 
@@ -188,6 +194,9 @@ homeassistant = MockModule(
         Platform=Platform,
         UnitOfElectricPotential=UnitOfElectricPotential,
         UnitOfPower=UnitOfPower,
+        CONF_HOST=CONF_HOST,
+        CONF_PASSWORD=CONF_PASSWORD,
+        CONF_USERNAME=CONF_USERNAME,
     ),
     helpers=MockModule(
         entity=MockModule(DeviceInfo=DeviceInfo),
