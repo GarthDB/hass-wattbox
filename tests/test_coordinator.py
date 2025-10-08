@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.config_entries import ConfigEntry
@@ -52,7 +52,8 @@ def coordinator(
     mock_telnet_client: WattboxTelnetClient,
 ) -> WattboxDataUpdateCoordinator:
     """Create a WattboxDataUpdateCoordinator instance for testing."""
-    return WattboxDataUpdateCoordinator(hass, mock_config_entry, mock_telnet_client)
+    with patch("homeassistant.helpers.frame.report_usage"):
+        return WattboxDataUpdateCoordinator(hass, mock_config_entry, mock_telnet_client)
 
 
 def test_coordinator_init(
@@ -61,9 +62,10 @@ def test_coordinator_init(
     mock_telnet_client: WattboxTelnetClient,
 ) -> None:
     """Test WattboxDataUpdateCoordinator initialization."""
-    coordinator = WattboxDataUpdateCoordinator(
-        hass, mock_config_entry, mock_telnet_client
-    )
+    with patch("homeassistant.helpers.frame.report_usage"):
+        coordinator = WattboxDataUpdateCoordinator(
+            hass, mock_config_entry, mock_telnet_client
+        )
 
     assert coordinator.telnet_client == mock_telnet_client
     assert coordinator.update_interval == timedelta(seconds=30)
@@ -77,9 +79,8 @@ def test_coordinator_init_custom_polling_interval(
     config_entry = MagicMock(spec=ConfigEntry)
     config_entry.data = {"polling_interval": 60}
 
-    coordinator = WattboxDataUpdateCoordinator(
-        hass, config_entry, mock_telnet_client
-    )
+    with patch("homeassistant.helpers.frame.report_usage"):
+        coordinator = WattboxDataUpdateCoordinator(hass, config_entry, mock_telnet_client)
 
     assert coordinator.update_interval == timedelta(seconds=60)
 

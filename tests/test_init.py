@@ -39,7 +39,7 @@ async def test_async_setup_entry(
     with patch(
         "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
         new_callable=AsyncMock,
-    ):
+    ), patch("homeassistant.helpers.frame.report_usage"):
         result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
@@ -55,7 +55,7 @@ async def test_async_unload_entry(
     with patch(
         "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
         new_callable=AsyncMock,
-    ):
+    ), patch("homeassistant.helpers.frame.report_usage"):
         await async_setup_entry(hass, mock_config_entry)
 
     # Then unload it
@@ -75,7 +75,7 @@ async def test_async_setup_entry_with_existing_data(
     with patch(
         "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
         new_callable=AsyncMock,
-    ):
+    ), patch("homeassistant.helpers.frame.report_usage"):
         result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
@@ -94,7 +94,7 @@ async def test_async_setup_entry_platforms_disabled(
     with patch(
         "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
         new_callable=AsyncMock,
-    ):
+    ), patch("homeassistant.helpers.frame.report_usage"):
         result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
