@@ -6,7 +6,25 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import pytest_asyncio
-from homeassistant.core import HomeAssistant
+
+# Mock Home Assistant imports for CI testing
+try:
+    from homeassistant.core import HomeAssistant
+except ImportError:
+    # Use our mock Home Assistant module
+    import sys
+    from .mock_homeassistant import homeassistant
+    sys.modules['homeassistant'] = homeassistant
+    sys.modules['homeassistant.core'] = homeassistant.core
+    sys.modules['homeassistant.config_entries'] = homeassistant.config_entries
+    sys.modules['homeassistant.data_entry_flow'] = homeassistant.data_entry_flow
+    sys.modules['homeassistant.helpers.entity'] = homeassistant.helpers.entity
+    sys.modules['homeassistant.helpers.update_coordinator'] = homeassistant.helpers.update_coordinator
+    sys.modules['homeassistant.components.binary_sensor'] = homeassistant.components.binary_sensor
+    sys.modules['homeassistant.components.sensor'] = homeassistant.components.sensor
+    sys.modules['homeassistant.components.switch'] = homeassistant.components.switch
+    
+    from homeassistant.core import HomeAssistant
 
 from custom_components.wattbox.const import DOMAIN
 
