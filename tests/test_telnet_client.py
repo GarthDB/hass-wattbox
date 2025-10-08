@@ -236,20 +236,31 @@ async def test_async_get_outlet_status(telnet_client: WattboxTelnetClient) -> No
         patch.object(telnet_client, "async_connect"),
         patch.object(telnet_client, "async_send_command") as mock_send,
     ):
-        # Mock responses for outlet status and names
+        # Mock responses for the new command delay behavior:
+        # 1. Get outlet count: ?OutletCount -> empty, ?Firmware -> ?OutletCount=12
+        # 2. Get outlet status: ?Firmware -> empty, ?OutletStatus -> empty,
+        #    ?Firmware -> ?OutletStatus=...
+        # 3. Get outlet names: ?Firmware -> empty, ?OutletName -> empty,
+        #    ?Firmware -> ?OutletName=...
         mock_send.side_effect = [
-            "?Firmware=1.0.0",  # Dummy command response
-            "?OutletStatus=1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0",  # Outlet states
-            "?Firmware=1.0.0",  # Dummy command response
+            # Outlet count sequence
+            "",  # ?OutletCount returns empty
+            "?OutletCount=12",  # ?Firmware returns outlet count
+            # Outlet status sequence
+            "",  # ?Firmware returns empty
+            "",  # ?OutletStatus returns empty
+            "?OutletStatus=1,0,1,0,1,0,1,0,1,0,1,0",  # ?Firmware returns outlet status
+            # Outlet names sequence
+            "",  # ?Firmware returns empty
+            "",  # ?OutletName returns empty
             "?OutletName={Outlet 1},{Outlet 2},{Outlet 3},{Outlet 4},"
             "{Outlet 5},{Outlet 6},{Outlet 7},{Outlet 8},{Outlet 9},"
-            "{Outlet 10},{Outlet 11},{Outlet 12},{Outlet 13},{Outlet 14},"
-            "{Outlet 15},{Outlet 16},{Outlet 17},{Outlet 18}",  # Outlet names
+            "{Outlet 10},{Outlet 11},{Outlet 12}",  # ?Firmware returns outlet names
         ]
 
-        outlets = await telnet_client.async_get_outlet_status(18)
+        outlets = await telnet_client.async_get_outlet_status()
 
-        assert len(outlets) == 18
+        assert len(outlets) == 12
         assert outlets[0]["state"] == 1
         assert outlets[0]["name"] == "Outlet 1"
         assert outlets[1]["state"] == 0
