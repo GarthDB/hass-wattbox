@@ -78,6 +78,18 @@ class ConfigFlow:
         cls.domain = domain
         super().__init_subclass__(**kwargs)
 
+    async def async_show_form(self, step_id, data_schema=None, errors=None):
+        """Mock async_show_form method."""
+        return FlowResult("test_flow", FlowResultType.FORM, {"step_id": step_id})
+
+    async def async_create_entry(self, title, data):
+        """Mock async_create_entry method."""
+        return FlowResult("test_flow", FlowResultType.CREATE_ENTRY, {"title": title, "data": data})
+
+    async def async_abort(self, reason):
+        """Mock async_abort method."""
+        return FlowResult("test_flow", FlowResultType.ABORT, {"reason": reason})
+
 
 class DeviceInfo:
     """Mock DeviceInfo class."""
@@ -204,6 +216,24 @@ class CoordinatorEntity:
     def __init__(self, coordinator):
         """Mock __init__ method that accepts coordinator parameter."""
         self.coordinator = coordinator
+        self._attr_unique_id = None
+        self._attr_name = None
+        self._attr_device_class = None
+
+    @property
+    def unique_id(self):
+        """Mock unique_id property."""
+        return self._attr_unique_id
+
+    @property
+    def name(self):
+        """Mock name property."""
+        return self._attr_name
+
+    @property
+    def device_class(self):
+        """Mock device_class property."""
+        return self._attr_device_class
 
 
 class MockVoluptuous:
