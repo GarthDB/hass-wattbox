@@ -57,12 +57,16 @@ class WattboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Get power metrics via HTTP
             power_metrics = await self.telnet_client.async_get_power_metrics()
 
+            # Get status monitoring data
+            status_info = await self.telnet_client.async_get_status_info()
+
             return {
                 "device_info": device_info,
                 "outlet_info": outlet_info,
                 "voltage": power_metrics.get("voltage"),
                 "current": power_metrics.get("current"),
                 "power": power_metrics.get("power"),
+                "status_info": status_info,
                 "connected": True,
             }
 

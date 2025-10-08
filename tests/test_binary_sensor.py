@@ -12,7 +12,11 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.wattbox.binary_sensor import (
+    WattboxPowerLostBinarySensor,
+    WattboxSafeVoltageBinarySensor,
     WattboxStatusBinarySensor,
+    WattboxUPSConnectedBinarySensor,
+    WattboxUPSPowerLostBinarySensor,
     async_setup_entry,
 )
 from custom_components.wattbox.const import DOMAIN
@@ -163,3 +167,155 @@ def test_wattbox_status_binary_sensor_device_class(
     )
 
     assert sensor.device_class == "connectivity"
+
+
+# Tests for WattboxPowerLostBinarySensor
+def test_wattbox_power_lost_binary_sensor_init(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxPowerLostBinarySensor initialization."""
+    sensor = WattboxPowerLostBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    assert sensor.coordinator == mock_coordinator
+    assert sensor.unique_id == "test_entry_id_power_lost"
+    assert sensor.name == "Power Lost"
+    assert sensor.device_class == "power"
+
+
+def test_wattbox_power_lost_binary_sensor_is_on(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxPowerLostBinarySensor is_on property."""
+    sensor = WattboxPowerLostBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    # Test when power is lost
+    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": True}}}
+    assert sensor.is_on is True
+
+    # Test when power is not lost
+    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": False}}}
+    assert sensor.is_on is False
+
+    # Test when no status data
+    mock_coordinator.data = {}
+    assert sensor.is_on is False
+
+
+# Tests for WattboxSafeVoltageBinarySensor
+def test_wattbox_safe_voltage_binary_sensor_init(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxSafeVoltageBinarySensor initialization."""
+    sensor = WattboxSafeVoltageBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    assert sensor.coordinator == mock_coordinator
+    assert sensor.unique_id == "test_entry_id_safe_voltage"
+    assert sensor.name == "Safe Voltage"
+    assert sensor.device_class == "voltage"
+
+
+def test_wattbox_safe_voltage_binary_sensor_is_on(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxSafeVoltageBinarySensor is_on property."""
+    sensor = WattboxSafeVoltageBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    # Test when voltage is safe (1)
+    mock_coordinator.data = {"status_info": {"power_status": {"safe_voltage": 1}}}
+    assert sensor.is_on is True
+
+    # Test when voltage is not safe (0)
+    mock_coordinator.data = {"status_info": {"power_status": {"safe_voltage": 0}}}
+    assert sensor.is_on is False
+
+    # Test when no status data
+    mock_coordinator.data = {}
+    assert sensor.is_on is None
+
+
+# Tests for WattboxUPSConnectedBinarySensor
+def test_wattbox_ups_connected_binary_sensor_init(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxUPSConnectedBinarySensor initialization."""
+    sensor = WattboxUPSConnectedBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    assert sensor.coordinator == mock_coordinator
+    assert sensor.unique_id == "test_entry_id_ups_connected"
+    assert sensor.name == "UPS Connected"
+    assert sensor.device_class == "connectivity"
+
+
+def test_wattbox_ups_connected_binary_sensor_is_on(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxUPSConnectedBinarySensor is_on property."""
+    sensor = WattboxUPSConnectedBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    # Test when UPS is connected
+    mock_coordinator.data = {"status_info": {"ups_connected": True}}
+    assert sensor.is_on is True
+
+    # Test when UPS is not connected
+    mock_coordinator.data = {"status_info": {"ups_connected": False}}
+    assert sensor.is_on is False
+
+    # Test when no status data
+    mock_coordinator.data = {}
+    assert sensor.is_on is False
+
+
+# Tests for WattboxUPSPowerLostBinarySensor
+def test_wattbox_ups_power_lost_binary_sensor_init(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxUPSPowerLostBinarySensor initialization."""
+    sensor = WattboxUPSPowerLostBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    assert sensor.coordinator == mock_coordinator
+    assert sensor.unique_id == "test_entry_id_ups_power_lost"
+    assert sensor.name == "UPS Power Lost"
+    assert sensor.device_class == "power"
+
+
+def test_wattbox_ups_power_lost_binary_sensor_is_on(
+    mock_coordinator: DataUpdateCoordinator, mock_device_info: DeviceInfo
+) -> None:
+    """Test WattboxUPSPowerLostBinarySensor is_on property."""
+    sensor = WattboxUPSPowerLostBinarySensor(
+        coordinator=mock_coordinator,
+        entry_id="test_entry_id",
+    )
+
+    # Test when UPS power is lost
+    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": True}}}
+    assert sensor.is_on is True
+
+    # Test when UPS power is not lost
+    mock_coordinator.data = {"status_info": {"ups_status": {"power_lost": False}}}
+    assert sensor.is_on is False
+
+    # Test when no status data
+    mock_coordinator.data = {}
+    assert sensor.is_on is False

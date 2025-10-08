@@ -17,7 +17,10 @@ from .const import (
     TELNET_CMD_OUTLET_NAME,
     TELNET_CMD_OUTLET_SET,
     TELNET_CMD_OUTLET_STATUS,
+    TELNET_CMD_POWER_STATUS,
     TELNET_CMD_SERVICE_TAG,
+    TELNET_CMD_UPS_CONNECTION,
+    TELNET_CMD_UPS_STATUS,
     TELNET_LOGIN_SUCCESS,
     TELNET_PASSWORD_PROMPT,
     TELNET_PORT,
@@ -69,6 +72,24 @@ class WattboxTelnetClient:
                 "auto_reboot": None,
             },
             "outlet_info": [],
+            "status_info": {
+                "power_status": {
+                    "current": None,
+                    "power": None,
+                    "voltage": None,
+                    "safe_voltage": None,
+                },
+                "ups_status": {
+                    "battery_charge": None,
+                    "battery_load": None,
+                    "battery_health": None,
+                    "power_lost": None,
+                    "battery_runtime": None,
+                    "alarm_enabled": None,
+                    "alarm_muted": None,
+                },
+                "ups_connected": None,
+            },
         }
 
     async def async_connect(self) -> None:
@@ -384,3 +405,111 @@ class WattboxTelnetClient:
         # Return placeholder values for now
         # TODO: Implement proper HTTP power monitoring when authentication is resolved
         return {"voltage": None, "current": None, "power": None}
+
+    async def async_get_status_info(self) -> dict[str, Any]:
+        """Get device status information including power and UPS status."""
+        if not self._connected:
+            await self.async_connect()
+
+        await self._get_power_status()
+        await self._get_ups_connection()
+        await self._get_ups_status()
+
+        return self._device_data["status_info"]
+
+    async def _get_power_status(self) -> None:
+        """Get power status information."""
+        try:
+            response = await self.async_send_command(TELNET_CMD_POWER_STATUS)
+            _LOGGER.debug("Power status response: %s", response)
+
+            if "=" in response and "PowerStatus" in response:
+                # Format: ?PowerStatus=60.00,600.00,110.00,1
+                # Where: current, power, voltage, safe_voltage
+                values = response.split("=")[1].split(",")
+                if len(values) >= 4:
+                    self._device_data["status_info"]["power_status"]["current"] = float(
+                        values[0]
+                    )
+                    self._device_data["status_info"]["power_status"]["power"] = float(
+                        values[1]
+                    )
+                    self._device_data["status_info"]["power_status"]["voltage"] = float(
+                        values[2]
+                    )
+                    self._device_data["status_info"]["power_status"]["safe_voltage"] = (
+                        int(values[3])
+                    )
+                    _LOGGER.debug(
+                        "Parsed power status: current=%s, power=%s, voltage=%s, "
+                        "safe_voltage=%s",
+                        values[0],
+                        values[1],
+                        values[2],
+                        values[3],
+                    )
+        except Exception as e:
+            _LOGGER.warning("Failed to get power status: %s", e)
+
+    async def _get_ups_connection(self) -> None:
+        """Get UPS connection status."""
+        try:
+            response = await self.async_send_command(TELNET_CMD_UPS_CONNECTION)
+            _LOGGER.debug("UPS connection response: %s", response)
+
+            if "=" in response and "UPSConnection" in response:
+                # Format: ?UPSConnection=0 or ?UPSConnection=1
+                # 0 = Disconnected, 1 = Connected
+                connected = int(response.split("=")[1])
+                self._device_data["status_info"]["ups_connected"] = bool(connected)
+                _LOGGER.debug("UPS connected: %s", bool(connected))
+        except Exception as e:
+            _LOGGER.warning("Failed to get UPS connection status: %s", e)
+
+    async def _get_ups_status(self) -> None:
+        """Get UPS status information."""
+        try:
+            response = await self.async_send_command(TELNET_CMD_UPS_STATUS)
+            _LOGGER.debug("UPS status response: %s", response)
+
+            if "=" in response and "UPSStatus" in response:
+                # Format: ?UPSStatus=50,0,Good,False,25,True,False
+                # Where: battery_charge, battery_load, battery_health, power_lost,
+                #        battery_runtime, alarm_enabled, alarm_muted
+                values = response.split("=")[1].split(",")
+                if len(values) >= 7:
+                    self._device_data["status_info"]["ups_status"]["battery_charge"] = (
+                        int(values[0])
+                    )
+                    self._device_data["status_info"]["ups_status"]["battery_load"] = (
+                        int(values[1])
+                    )
+                    self._device_data["status_info"]["ups_status"]["battery_health"] = (
+                        values[2]
+                    )
+                    self._device_data["status_info"]["ups_status"]["power_lost"] = (
+                        values[3] == "True"
+                    )
+                    self._device_data["status_info"]["ups_status"][
+                        "battery_runtime"
+                    ] = int(values[4])
+                    self._device_data["status_info"]["ups_status"]["alarm_enabled"] = (
+                        values[5] == "True"
+                    )
+                    self._device_data["status_info"]["ups_status"]["alarm_muted"] = (
+                        values[6] == "True"
+                    )
+                    _LOGGER.debug(
+                        "Parsed UPS status: charge=%s%%, load=%s%%, health=%s, "
+                        "power_lost=%s, runtime=%smin, alarm_enabled=%s, "
+                        "alarm_muted=%s",
+                        values[0],
+                        values[1],
+                        values[2],
+                        values[3],
+                        values[4],
+                        values[5],
+                        values[6],
+                    )
+        except Exception as e:
+            _LOGGER.warning("Failed to get UPS status: %s", e)

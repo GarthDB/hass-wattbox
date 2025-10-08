@@ -311,3 +311,192 @@ def test_authentication_error_exception() -> None:
     """Test WattboxAuthenticationError exception."""
     error = WattboxAuthenticationError("Test auth error")
     assert str(error) == "Test auth error"
+
+
+# Status monitoring tests
+@pytest.mark.asyncio
+async def test_async_get_status_info(telnet_client: WattboxTelnetClient) -> None:
+    """Test async_get_status_info method."""
+    with (
+        patch.object(
+            telnet_client, "async_connect", new_callable=AsyncMock
+        ) as mock_connect,
+        patch.object(
+            telnet_client, "_get_power_status", new_callable=AsyncMock
+        ) as mock_power,
+        patch.object(
+            telnet_client, "_get_ups_connection", new_callable=AsyncMock
+        ) as mock_ups_conn,
+        patch.object(
+            telnet_client, "_get_ups_status", new_callable=AsyncMock
+        ) as mock_ups_status,
+    ):
+
+        result = await telnet_client.async_get_status_info()
+
+        mock_connect.assert_called_once()
+        mock_power.assert_called_once()
+        mock_ups_conn.assert_called_once()
+        mock_ups_status.assert_called_once()
+
+        assert isinstance(result, dict)
+        assert "power_status" in result
+        assert "ups_status" in result
+        assert "ups_connected" in result
+
+
+@pytest.mark.asyncio
+async def test_get_power_status_success(telnet_client: WattboxTelnetClient) -> None:
+    """Test _get_power_status method with successful response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.return_value = "?PowerStatus=60.00,600.00,110.00,1"
+
+        await telnet_client._get_power_status()
+
+        mock_send.assert_called_once_with("?PowerStatus")
+
+        power_status = telnet_client._device_data["status_info"]["power_status"]
+        assert power_status["current"] == 60.0
+        assert power_status["power"] == 600.0
+        assert power_status["voltage"] == 110.0
+        assert power_status["safe_voltage"] == 1
+
+
+@pytest.mark.asyncio
+async def test_get_power_status_failure(telnet_client: WattboxTelnetClient) -> None:
+    """Test _get_power_status method with failed response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.side_effect = Exception("Connection failed")
+
+        await telnet_client._get_power_status()
+
+        # Should not raise exception, just log warning
+        power_status = telnet_client._device_data["status_info"]["power_status"]
+        assert power_status["current"] is None
+        assert power_status["power"] is None
+        assert power_status["voltage"] is None
+        assert power_status["safe_voltage"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_ups_connection_success(telnet_client: WattboxTelnetClient) -> None:
+    """Test _get_ups_connection method with successful response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.return_value = "?UPSConnection=1"
+
+        await telnet_client._get_ups_connection()
+
+        mock_send.assert_called_once_with("?UPSConnection")
+
+        assert telnet_client._device_data["status_info"]["ups_connected"] is True
+
+
+@pytest.mark.asyncio
+async def test_get_ups_connection_disconnected(
+    telnet_client: WattboxTelnetClient,
+) -> None:
+    """Test _get_ups_connection method with disconnected response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.return_value = "?UPSConnection=0"
+
+        await telnet_client._get_ups_connection()
+
+        assert telnet_client._device_data["status_info"]["ups_connected"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_ups_status_success(telnet_client: WattboxTelnetClient) -> None:
+    """Test _get_ups_status method with successful response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.return_value = "?UPSStatus=50,0,Good,False,25,True,False"
+
+        await telnet_client._get_ups_status()
+
+        mock_send.assert_called_once_with("?UPSStatus")
+
+        ups_status = telnet_client._device_data["status_info"]["ups_status"]
+        assert ups_status["battery_charge"] == 50
+        assert ups_status["battery_load"] == 0
+        assert ups_status["battery_health"] == "Good"
+        assert ups_status["power_lost"] is False
+        assert ups_status["battery_runtime"] == 25
+        assert ups_status["alarm_enabled"] is True
+        assert ups_status["alarm_muted"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_ups_status_power_lost(telnet_client: WattboxTelnetClient) -> None:
+    """Test _get_ups_status method with power lost response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.return_value = "?UPSStatus=30,80,Bad,True,10,True,False"
+
+        await telnet_client._get_ups_status()
+
+        ups_status = telnet_client._device_data["status_info"]["ups_status"]
+        assert ups_status["battery_charge"] == 30
+        assert ups_status["battery_load"] == 80
+        assert ups_status["battery_health"] == "Bad"
+        assert ups_status["power_lost"] is True
+        assert ups_status["battery_runtime"] == 10
+        assert ups_status["alarm_enabled"] is True
+        assert ups_status["alarm_muted"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_ups_status_failure(telnet_client: WattboxTelnetClient) -> None:
+    """Test _get_ups_status method with failed response."""
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
+        mock_send.side_effect = Exception("Connection failed")
+
+        await telnet_client._get_ups_status()
+
+        # Should not raise exception, just log warning
+        ups_status = telnet_client._device_data["status_info"]["ups_status"]
+        assert ups_status["battery_charge"] is None
+        assert ups_status["battery_load"] is None
+        assert ups_status["battery_health"] is None
+        assert ups_status["power_lost"] is None
+        assert ups_status["battery_runtime"] is None
+        assert ups_status["alarm_enabled"] is None
+        assert ups_status["alarm_muted"] is None
+
+
+def test_device_data_structure(telnet_client: WattboxTelnetClient) -> None:
+    """Test that device_data has the correct structure for status monitoring."""
+    device_data = telnet_client.device_data
+
+    assert "status_info" in device_data
+    assert "power_status" in device_data["status_info"]
+    assert "ups_status" in device_data["status_info"]
+    assert "ups_connected" in device_data["status_info"]
+
+    # Check power_status structure
+    power_status = device_data["status_info"]["power_status"]
+    assert "current" in power_status
+    assert "power" in power_status
+    assert "voltage" in power_status
+    assert "safe_voltage" in power_status
+
+    # Check ups_status structure
+    ups_status = device_data["status_info"]["ups_status"]
+    assert "battery_charge" in ups_status
+    assert "battery_load" in ups_status
+    assert "battery_health" in ups_status
+    assert "power_lost" in ups_status
+    assert "battery_runtime" in ups_status
+    assert "alarm_enabled" in ups_status
+    assert "alarm_muted" in ups_status

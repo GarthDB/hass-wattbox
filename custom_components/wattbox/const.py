@@ -34,6 +34,9 @@ TELNET_CMD_OUTLET_NAME: Final[str] = "?OutletName"
 TELNET_CMD_AUTO_REBOOT: Final[str] = "?AutoReboot"
 TELNET_CMD_MUTE: Final[str] = "?Mute"
 TELNET_CMD_SAFE_VOLTAGE: Final[str] = "?SafeVoltage"
+TELNET_CMD_POWER_STATUS: Final[str] = "?PowerStatus"
+TELNET_CMD_UPS_STATUS: Final[str] = "?UPSStatus"
+TELNET_CMD_UPS_CONNECTION: Final[str] = "?UPSConnection"
 
 # HTTP endpoints (for power monitoring)
 HTTP_ENDPOINT_STATUS: Final[str] = "/status.xml"
