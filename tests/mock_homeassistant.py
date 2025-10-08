@@ -129,15 +129,19 @@ class MockModule:
 # Mock constants
 class Platform:
     """Mock Platform enum."""
+
     BINARY_SENSOR = "binary_sensor"
     SENSOR = "sensor"
     SWITCH = "switch"
 
+
 class MockFrame:
     """Mock frame module."""
+
     def report_usage(self, *args, **kwargs):
         """Mock report_usage function."""
         pass
+
 
 # Mock the homeassistant module structure
 homeassistant = MockModule(
