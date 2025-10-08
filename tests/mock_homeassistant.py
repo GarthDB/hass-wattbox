@@ -126,16 +126,31 @@ class MockModule:
             setattr(self, key, value)
 
 
+# Mock constants
+class Platform:
+    """Mock Platform enum."""
+    BINARY_SENSOR = "binary_sensor"
+    SENSOR = "sensor"
+    SWITCH = "switch"
+
+class MockFrame:
+    """Mock frame module."""
+    def report_usage(self, *args, **kwargs):
+        """Mock report_usage function."""
+        pass
+
 # Mock the homeassistant module structure
 homeassistant = MockModule(
     core=MockModule(HomeAssistant=HomeAssistant),
     config_entries=MockModule(ConfigEntry=ConfigEntry),
     data_entry_flow=MockModule(FlowResultType=FlowResultType),
+    const=MockModule(Platform=Platform),
     helpers=MockModule(
         entity=MockModule(DeviceInfo=DeviceInfo),
         update_coordinator=MockModule(
             DataUpdateCoordinator=DataUpdateCoordinator, UpdateFailed=UpdateFailed
         ),
+        frame=MockFrame(),
     ),
     components=MockModule(
         binary_sensor=MockModule(BinarySensorEntity=BinarySensorEntity),

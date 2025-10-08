@@ -29,6 +29,10 @@ except ImportError:
     )
     sys.modules["homeassistant.components.sensor"] = homeassistant.components.sensor
     sys.modules["homeassistant.components.switch"] = homeassistant.components.switch
+    # Add missing modules that our code imports
+    sys.modules["homeassistant.const"] = homeassistant.const
+    sys.modules["homeassistant.helpers"] = homeassistant.helpers
+    sys.modules["homeassistant.helpers.frame"] = homeassistant.helpers.frame
 
     from homeassistant.core import HomeAssistant
 
