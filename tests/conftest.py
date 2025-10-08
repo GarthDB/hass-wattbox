@@ -10,8 +10,7 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.wattbox.const import DOMAIN
 
-# Patch the frame helper at module level
-patch("homeassistant.helpers.frame.report_usage").start()
+# Note: We don't need to patch report_usage as it's not essential for our tests
 
 
 @pytest.fixture
