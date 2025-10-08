@@ -36,10 +36,13 @@ async def test_async_setup_entry(
     hass: HomeAssistant, mock_config_entry: ConfigEntry
 ) -> None:
     """Test async_setup_entry."""
-    with patch(
-        "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
-        new_callable=AsyncMock,
-    ), patch("homeassistant.helpers.frame.report_usage"):
+    with (
+        patch(
+            "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
+            new_callable=AsyncMock,
+        ),
+        patch("homeassistant.helpers.frame.report_usage"),
+    ):
         result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
@@ -52,10 +55,13 @@ async def test_async_unload_entry(
 ) -> None:
     """Test async_unload_entry."""
     # First set up the entry
-    with patch(
-        "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
-        new_callable=AsyncMock,
-    ), patch("homeassistant.helpers.frame.report_usage"):
+    with (
+        patch(
+            "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
+            new_callable=AsyncMock,
+        ),
+        patch("homeassistant.helpers.frame.report_usage"),
+    ):
         await async_setup_entry(hass, mock_config_entry)
 
     # Then unload it
@@ -72,10 +78,13 @@ async def test_async_setup_entry_with_existing_data(
     # Pre-populate hass.data
     hass.data[DOMAIN] = {"existing": "data"}
 
-    with patch(
-        "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
-        new_callable=AsyncMock,
-    ), patch("homeassistant.helpers.frame.report_usage"):
+    with (
+        patch(
+            "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
+            new_callable=AsyncMock,
+        ),
+        patch("homeassistant.helpers.frame.report_usage"),
+    ):
         result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True
@@ -91,10 +100,13 @@ async def test_async_setup_entry_platforms_disabled(
     """Test async_setup_entry when platforms are disabled (TODO sections)."""
     # The current implementation has TODO sections for platform setup
     # This test verifies it doesn't crash
-    with patch(
-        "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
-        new_callable=AsyncMock,
-    ), patch("homeassistant.helpers.frame.report_usage"):
+    with (
+        patch(
+            "custom_components.wattbox.coordinator.WattboxDataUpdateCoordinator.async_config_entry_first_refresh",
+            new_callable=AsyncMock,
+        ),
+        patch("homeassistant.helpers.frame.report_usage"),
+    ):
         result = await async_setup_entry(hass, mock_config_entry)
 
     assert result is True

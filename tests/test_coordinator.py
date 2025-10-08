@@ -80,7 +80,9 @@ def test_coordinator_init_custom_polling_interval(
     config_entry.data = {"polling_interval": 60}
 
     with patch("homeassistant.helpers.frame.report_usage"):
-        coordinator = WattboxDataUpdateCoordinator(hass, config_entry, mock_telnet_client)
+        coordinator = WattboxDataUpdateCoordinator(
+            hass, config_entry, mock_telnet_client
+        )
 
     assert coordinator.update_interval == timedelta(seconds=60)
 
