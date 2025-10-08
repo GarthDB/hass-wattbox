@@ -28,6 +28,36 @@ class FlowResult:
         self.type = type
         self.data = data or {}
 
+    def __getitem__(self, key):
+        """Make FlowResult subscriptable like a dictionary."""
+        if key == "type":
+            return self.type
+        elif key == "data":
+            # For CREATE_ENTRY type, return just the data dict without title
+            if self.type == FlowResultType.CREATE_ENTRY:
+                data_without_title = self.data.copy()
+                data_without_title.pop("title", None)
+                return data_without_title
+            # For other types, return the full data structure
+            return self.data
+        elif key == "flow_id":
+            return self.flow_id
+        elif key == "step_id":
+            return self.data.get("step_id")
+        elif key == "errors":
+            return self.data.get("errors", {})
+        elif key == "title":
+            return self.data.get("title")
+        else:
+            # For any other key, try to get it from data
+            return self.data.get(key)
+
+    def __contains__(self, key):
+        """Support 'key in result' checks."""
+        if key == "type" or key == "data" or key == "flow_id":
+            return True
+        return key in self.data
+
 
 class HomeAssistant:
     """Mock HomeAssistant class."""
@@ -78,15 +108,21 @@ class ConfigFlow:
         cls.domain = domain
         super().__init_subclass__(**kwargs)
 
-    async def async_show_form(self, step_id, data_schema=None, errors=None):
+    def async_show_form(self, step_id, data_schema=None, errors=None):
         """Mock async_show_form method."""
-        return FlowResult("test_flow", FlowResultType.FORM, {"step_id": step_id})
+        data = {"step_id": step_id}
+        if errors:
+            data["errors"] = errors
+        return FlowResult("test_flow", FlowResultType.FORM, data)
 
-    async def async_create_entry(self, title, data):
+    def async_create_entry(self, title, data):
         """Mock async_create_entry method."""
-        return FlowResult("test_flow", FlowResultType.CREATE_ENTRY, {"title": title, "data": data})
+        # Include title in the data for CREATE_ENTRY
+        data_with_title = data.copy()
+        data_with_title["title"] = title
+        return FlowResult("test_flow", FlowResultType.CREATE_ENTRY, data_with_title)
 
-    async def async_abort(self, reason):
+    def async_abort(self, reason):
         """Mock async_abort method."""
         return FlowResult("test_flow", FlowResultType.ABORT, {"reason": reason})
 
@@ -106,12 +142,30 @@ class DeviceInfo:
         self.serial_number = kwargs.get("serial_number", "")
         self.configuration_url = kwargs.get("configuration_url", "")
 
+    def __eq__(self, other):
+        """Compare DeviceInfo objects for equality."""
+        if not isinstance(other, DeviceInfo):
+            return False
+        return (
+            self.identifiers == other.identifiers
+            and self.connections == other.connections
+            and self.manufacturer == other.manufacturer
+            and self.model == other.model
+            and self.name == other.name
+            and self.suggested_area == other.suggested_area
+            and self.sw_version == other.sw_version
+            and self.hw_version == other.hw_version
+            and self.serial_number == other.serial_number
+            and self.configuration_url == other.configuration_url
+        )
+
 
 class DataUpdateCoordinator:
     """Mock DataUpdateCoordinator class."""
 
-    def __init__(self, hass: HomeAssistant, **kwargs):
+    def __init__(self, hass: HomeAssistant, logger=None, **kwargs):
         self.hass = hass
+        self.logger = logger
         self.data = {}
         self.last_update_success = True
         self.last_update_time = None
@@ -151,7 +205,13 @@ class BinarySensorEntity:
 class SensorEntity:
     """Mock SensorEntity class."""
 
-    pass
+    def __init__(self):
+        self._attr_native_unit_of_measurement = None
+
+    @property
+    def native_unit_of_measurement(self):
+        """Mock native_unit_of_measurement property."""
+        return self._attr_native_unit_of_measurement
 
 
 class SwitchEntity:

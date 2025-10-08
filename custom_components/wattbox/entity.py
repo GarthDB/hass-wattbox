@@ -34,6 +34,16 @@ class WattboxEntity(CoordinatorEntity):
             sw_version=device_data.get("hardware_version"),
         )
 
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info."""
+        return self._attr_device_info
+
+    @property
+    def should_poll(self) -> bool:
+        """Return if polling is needed."""
+        return False
+
 
 class WattboxDeviceEntity(WattboxEntity):
     """Base entity for Wattbox device-level entities."""

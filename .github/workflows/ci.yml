@@ -16,55 +16,55 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libffi-dev libssl-dev
-    
+
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade "setuptools>=68.0.0" wheel
         pip install -r requirements-test.txt
-    
+
     - name: Lint with flake8
       run: |
         flake8 custom_components/wattbox tests/
-    
+
     - name: Check formatting with black
       run: |
         black --check custom_components/wattbox tests/
-    
+
     - name: Check import sorting with isort
       run: |
         isort --check-only custom_components/wattbox tests/
-    
+
     # - name: Type check with mypy
     #   run: |
     #     mypy custom_components/wattbox/
-    
+
     - name: Security check with bandit
       run: |
         bandit -r custom_components/wattbox/ -f json -o bandit-report.json || true
-    
+
     - name: Security check with safety
       run: |
-        safety check --json --output safety-report.json || true
-    
+        safety check --output json || true
+
     - name: Dead code check with vulture
       run: |
         vulture custom_components/wattbox/ --min-confidence 80 || true
-    
+
     - name: Test with pytest
       run: |
         pytest tests/ --cov=custom_components/wattbox --cov-report=xml --cov-report=html --cov-fail-under=80 --tb=short
-    
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
