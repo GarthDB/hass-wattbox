@@ -415,11 +415,13 @@ async def test_get_ups_connection_disconnected(
 @pytest.mark.asyncio
 async def test_get_ups_connection_failure(telnet_client: WattboxTelnetClient) -> None:
     """Test _get_ups_connection method with failed response."""
-    with patch.object(telnet_client, "async_send_command", new_callable=AsyncMock) as mock_send:
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
         mock_send.side_effect = Exception("Connection failed")
-        
+
         await telnet_client._get_ups_connection()
-        
+
         # Should not raise exception, just log warning
         assert telnet_client._device_data["status_info"]["ups_connected"] is None
 
@@ -488,27 +490,35 @@ async def test_get_ups_status_failure(telnet_client: WattboxTelnetClient) -> Non
 
 
 @pytest.mark.asyncio
-async def test_get_outlet_states_invalid_response(telnet_client: WattboxTelnetClient) -> None:
+async def test_get_outlet_states_invalid_response(
+    telnet_client: WattboxTelnetClient,
+) -> None:
     """Test _get_outlet_states method with invalid response."""
-    with patch.object(telnet_client, "async_send_command", new_callable=AsyncMock) as mock_send:
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
         # Mock the three calls in sequence
         mock_send.side_effect = ["", "", "InvalidResponse"]
-        
+
         await telnet_client._get_outlet_states()
-        
+
         # Should not raise exception, just log warning
         assert mock_send.call_count == 3
 
 
 @pytest.mark.asyncio
-async def test_get_outlet_names_invalid_response(telnet_client: WattboxTelnetClient) -> None:
+async def test_get_outlet_names_invalid_response(
+    telnet_client: WattboxTelnetClient,
+) -> None:
     """Test _get_outlet_names method with invalid response."""
-    with patch.object(telnet_client, "async_send_command", new_callable=AsyncMock) as mock_send:
+    with patch.object(
+        telnet_client, "async_send_command", new_callable=AsyncMock
+    ) as mock_send:
         # Mock the three calls in sequence
         mock_send.side_effect = ["", "", "InvalidResponse"]
-        
+
         await telnet_client._get_outlet_names()
-        
+
         # Should not raise exception, just log warning
         assert mock_send.call_count == 3
 
@@ -516,19 +526,19 @@ async def test_get_outlet_names_invalid_response(telnet_client: WattboxTelnetCli
 def test_device_data_structure(telnet_client: WattboxTelnetClient) -> None:
     """Test that device_data has the correct structure for status monitoring."""
     device_data = telnet_client.device_data
-    
+
     assert "status_info" in device_data
     assert "power_status" in device_data["status_info"]
     assert "ups_status" in device_data["status_info"]
     assert "ups_connected" in device_data["status_info"]
-    
+
     # Check power_status structure
     power_status = device_data["status_info"]["power_status"]
     assert "current" in power_status
     assert "power" in power_status
     assert "voltage" in power_status
     assert "safe_voltage" in power_status
-    
+
     # Check ups_status structure
     ups_status = device_data["status_info"]["ups_status"]
     assert "battery_charge" in ups_status
