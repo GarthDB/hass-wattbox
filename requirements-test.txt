@@ -1,8 +1,8 @@
 # Minimal requirements for CI testing
 # Core testing framework
 pytest>=7.0.0
-pytest-asyncio==0.20.2
-pytest-cov==3.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
 pytest-mock>=3.10.0
 
 # Code quality tools
@@ -19,7 +19,8 @@ safety>=2.3.0
 vulture>=2.7.0
 
 # Home Assistant testing (minimal)
-pytest-homeassistant-custom-component>=0.12.49
+# Note: Removed pytest-homeassistant-custom-component due to dependency conflicts
+# We'll test our code directly without Home Assistant-specific testing tools
 
 # Wattbox integration dependencies
 telnetlib3>=2.0.0
