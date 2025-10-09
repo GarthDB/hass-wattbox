@@ -22,8 +22,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox binary sensor entities."""
-    _LOGGER.error("DIAGNOSTIC: binary_sensor.py v0.2.11 - async_setup_entry called")
-
+    _LOGGER.error("DIAGNOSTIC: binary_sensor.py v0.2.12 - async_setup_entry called")
+    _LOGGER.error(f"DIAGNOSTIC: async_add_entities = {async_add_entities}, type = {type(async_add_entities)}")
+    
     coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.error(f"DIAGNOSTIC: coordinator = {coordinator}")
 
