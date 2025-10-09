@@ -23,6 +23,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox sensor entities."""
+    # CRITICAL FIX: Check if async_add_entities is None
+    if async_add_entities is None:
+        _LOGGER.error("CRITICAL: async_add_entities is None! This is a Home Assistant platform issue.")
+        return
+
     coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create device info sensors
