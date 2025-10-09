@@ -2,17 +2,16 @@
   "domain": "wattbox",
   "name": "Wattbox",
   "version": "0.2.17",
-  "documentation": "https://github.com/GarthDB/ha-wattbox",
-  "issue_tracker": "https://github.com/GarthDB/ha-wattbox/issues",
   "codeowners": [
     "@GarthDB"
   ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/GarthDB/ha-wattbox",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/GarthDB/ha-wattbox/issues",
   "requirements": [
     "telnetlib3>=1.0.0"
-  ],
-  "dependencies": [],
-  "iot_class": "local_polling",
-  "config_flow": true,
-  "integration_type": "hub",
-  "homeassistant": "2023.1.0"
+  ]
 }
