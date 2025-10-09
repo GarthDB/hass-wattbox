@@ -24,19 +24,29 @@ class WattboxEntity(CoordinatorEntity):
         self._device_info = device_info
         self._attr_unique_id = unique_id
 
-        # Build device info from coordinator data
-        device_data = coordinator.data.get("device_info", {})
+        # Initialize device info with defaults - will be updated when data is available
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, device_data.get("serial_number", "unknown"))},
-            name=device_data.get("hostname", "Wattbox"),
+            identifiers={(DOMAIN, "unknown")},
+            name="Wattbox",
             manufacturer=DEVICE_MANUFACTURER,
-            model=device_data.get("model", DEVICE_MODEL),
-            sw_version=device_data.get("hardware_version"),
+            model=DEVICE_MODEL,
+            sw_version=None,
         )
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
+        # Update device info if coordinator data is available
+        if self.coordinator.data:
+            device_data = self.coordinator.data.get("device_info", {})
+            if device_data:
+                self._attr_device_info = DeviceInfo(
+                    identifiers={(DOMAIN, device_data.get("serial_number", "unknown"))},
+                    name=device_data.get("hostname", "Wattbox"),
+                    manufacturer=DEVICE_MANUFACTURER,
+                    model=device_data.get("model", DEVICE_MODEL),
+                    sw_version=device_data.get("hardware_version"),
+                )
         return self._attr_device_info
 
     @property

@@ -25,7 +25,9 @@ async def async_setup_entry(
     """Set up Wattbox sensor entities."""
     # CRITICAL FIX: Check if async_add_entities is None
     if async_add_entities is None:
-        _LOGGER.error("CRITICAL: async_add_entities is None! This is a Home Assistant platform issue.")
+        _LOGGER.error(
+            "CRITICAL: async_add_entities is None! This is a Home Assistant platform issue."
+        )
         return
 
     coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
@@ -77,6 +79,8 @@ class WattboxFirmwareSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the firmware value."""
+        if not self.coordinator.data:
+            return None
         device_info = self.coordinator.data.get("device_info", {})
         return device_info.get("hardware_version")
 
@@ -97,6 +101,8 @@ class WattboxModelSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the model value."""
+        if not self.coordinator.data:
+            return None
         device_info = self.coordinator.data.get("device_info", {})
         return device_info.get("model")
 
@@ -117,6 +123,8 @@ class WattboxSerialSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the serial value."""
+        if not self.coordinator.data:
+            return None
         device_info = self.coordinator.data.get("device_info", {})
         return device_info.get("serial_number")
 
@@ -137,6 +145,8 @@ class WattboxHostnameSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the hostname value."""
+        if not self.coordinator.data:
+            return None
         device_info = self.coordinator.data.get("device_info", {})
         return device_info.get("hostname")
 
@@ -158,6 +168,8 @@ class WattboxVoltageSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         """Return the voltage value."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("voltage")
 
 
@@ -178,6 +190,8 @@ class WattboxCurrentSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         """Return the current value."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("current")
 
 
@@ -198,4 +212,6 @@ class WattboxPowerSensor(WattboxDeviceEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         """Return the power value."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get("power")

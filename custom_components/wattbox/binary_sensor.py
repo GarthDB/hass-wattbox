@@ -24,19 +24,17 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Wattbox binary sensor entities - v0.2.14 FORCE RELOAD VERSION."""
-    _LOGGER.error("DIAGNOSTIC: binary_sensor.py v0.2.14 FORCE RELOAD - async_setup_entry called")
-    _LOGGER.error(f"DIAGNOSTIC: async_add_entities = {async_add_entities}, type = {type(async_add_entities)}")
-    
-    # CRITICAL FIX: Check if async_add_entities is None
+    """Set up Wattbox binary sensor entities."""
+    # Check if async_add_entities is None
     if async_add_entities is None:
-        _LOGGER.error("CRITICAL: async_add_entities is None! This is a Home Assistant platform issue.")
+        _LOGGER.error(
+            "async_add_entities is None! This is a Home Assistant platform issue."
+        )
         return
-    
-    coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    _LOGGER.error(f"DIAGNOSTIC: coordinator = {coordinator}")
 
-    # Create all status monitoring sensors - v0.2.14 FORCE RELOAD
+    coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+
+    # Create all status monitoring sensors
     sensors = [
         WattboxStatusBinarySensor(coordinator, config_entry.entry_id),
         WattboxPowerLostBinarySensor(coordinator, config_entry.entry_id),
@@ -44,32 +42,19 @@ async def async_setup_entry(
         WattboxUPSConnectedBinarySensor(coordinator, config_entry.entry_id),
         WattboxUPSPowerLostBinarySensor(coordinator, config_entry.entry_id),
     ]
-    _LOGGER.error(f"DIAGNOSTIC: sensors = {sensors}")
 
-    # Filter out any None sensors and ensure we have a list - v0.2.14 FORCE RELOAD
+    # Filter out any None sensors and ensure we have a list
     valid_sensors = []
-    for i, sensor in enumerate(sensors):
-        _LOGGER.error(f"DIAGNOSTIC: sensor[{i}] = {sensor}, type = {type(sensor)}")
+    for sensor in sensors:
         if sensor is not None:
             valid_sensors.append(sensor)
-    
-    _LOGGER.error(f"DIAGNOSTIC: valid_sensors = {valid_sensors}, type = {type(valid_sensors)}")
-    _LOGGER.error(f"DIAGNOSTIC: About to call async_add_entities with {len(valid_sensors)} entities")
+
+    _LOGGER.debug(
+        f"Binary sensor setup: {len(sensors)} total, {len(valid_sensors)} valid"
+    )
 
     if valid_sensors:
-        _LOGGER.error("DIAGNOSTIC: Calling async_add_entities with valid_sensors")
-        _LOGGER.error(f"DIAGNOSTIC: valid_sensors type: {type(valid_sensors)}")
-        _LOGGER.error(f"DIAGNOSTIC: valid_sensors length: {len(valid_sensors)}")
-        _LOGGER.error(f"DIAGNOSTIC: First sensor type: {type(valid_sensors[0]) if valid_sensors else 'N/A'}")
-        
-        try:
-            _LOGGER.error("DIAGNOSTIC: About to await async_add_entities...")
-            await async_add_entities(valid_sensors)
-            _LOGGER.error("DIAGNOSTIC: async_add_entities completed successfully")
-        except Exception as e:
-            _LOGGER.error(f"DIAGNOSTIC: Exception in async_add_entities: {type(e).__name__}: {e}")
-            _LOGGER.error(f"DIAGNOSTIC: Exception details: {repr(e)}")
-            raise
+        await async_add_entities(valid_sensors)
     else:
         _LOGGER.warning("No valid binary sensors to add")
 
@@ -89,7 +74,9 @@ class WattboxStatusBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if the device is online - v0.2.14."""
+        """Return true if the device is online."""
+        if not self.coordinator.data:
+            return False
         return self.coordinator.data.get("connected", False)
 
 
@@ -108,7 +95,9 @@ class WattboxPowerLostBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if power has been lost - v0.2.14."""
+        """Return true if power has been lost."""
+        if not self.coordinator.data:
+            return False
         if not self.coordinator.data.get("connected", False):
             return None
         status_info = self.coordinator.data.get("status_info", {})
@@ -127,16 +116,21 @@ class WattboxSafeVoltageBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
         """Initialize the safe voltage binary sensor - v0.2.14."""
         super().__init__(coordinator, {}, f"{entry_id}_safe_voltage")
         self._attr_name = "Safe Voltage"
-        self._attr_device_class = "power"
+        self._attr_device_class = "voltage"
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if voltage is safe - v0.2.14."""
+        """Return true if voltage is safe."""
+        if not self.coordinator.data:
+            return False
         if not self.coordinator.data.get("connected", False):
             return None
         status_info = self.coordinator.data.get("status_info", {})
-        ups_status = status_info.get("ups_status", {})
-        return ups_status.get("safe_voltage", True)
+        power_status = status_info.get("power_status", {})
+        safe_voltage = power_status.get("safe_voltage")
+        if safe_voltage is None:
+            return None
+        return bool(safe_voltage)
 
 
 class WattboxUPSConnectedBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
@@ -154,12 +148,13 @@ class WattboxUPSConnectedBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if UPS is connected - v0.2.14."""
+        """Return true if UPS is connected."""
+        if not self.coordinator.data:
+            return False
         if not self.coordinator.data.get("connected", False):
             return None
         status_info = self.coordinator.data.get("status_info", {})
-        ups_status = status_info.get("ups_status", {})
-        return ups_status.get("ups_connected", False)
+        return status_info.get("ups_connected", False)
 
 
 class WattboxUPSPowerLostBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
@@ -177,9 +172,11 @@ class WattboxUPSPowerLostBinarySensor(WattboxDeviceEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if UPS power has been lost - v0.2.14."""
+        """Return true if UPS power has been lost."""
+        if not self.coordinator.data:
+            return False
         if not self.coordinator.data.get("connected", False):
             return None
         status_info = self.coordinator.data.get("status_info", {})
         ups_status = status_info.get("ups_status", {})
-        return ups_status.get("ups_power_lost", False)
+        return ups_status.get("power_lost", False)
