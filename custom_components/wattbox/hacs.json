@@ -3,5 +3,6 @@
   "content_in_root": false,
   "filename": "wattbox",
   "country": ["US"],
-  "homeassistant": "2023.1.0"
+  "homeassistant": "2023.1.0",
+  "render_readme": true
 }
