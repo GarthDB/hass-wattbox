@@ -43,10 +43,16 @@ async def async_setup_entry(
         )
         switches.append(switch)
 
-    # Filter out any None switches
+    # Ensure we have valid switches before adding entities
+    if not switches:
+        _LOGGER.warning("No switches to add for Wattbox integration")
+        return
+    
+    # Filter out any None switches and add only valid ones
     valid_switches = [switch for switch in switches if switch is not None]
-
+    
     if valid_switches:
+        _LOGGER.debug(f"Adding {len(valid_switches)} valid switches to Home Assistant")
         await async_add_entities(valid_switches)
     else:
         _LOGGER.warning("No valid switches found for Wattbox integration")
