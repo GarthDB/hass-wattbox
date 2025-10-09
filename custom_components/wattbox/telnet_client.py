@@ -141,7 +141,11 @@ class WattboxTelnetClient:
                 self._reader.readuntil(prompt.encode()),
                 timeout=self._timeout,
             )
-            return response.decode().strip()
+            # Handle both bytes and str (telnetlib3 may return either)
+            if isinstance(response, bytes):
+                return response.decode().strip()
+            else:
+                return str(response).strip()
         except asyncio.TimeoutError as err:
             raise WattboxConnectionError(
                 f"Timeout waiting for prompt: {prompt}"
@@ -182,7 +186,11 @@ class WattboxTelnetClient:
             )
 
             # Decode and clean up the response
-            response_str = response.decode("utf-8", errors="ignore").strip()
+            # Handle both bytes and str (telnetlib3 may return either)
+            if isinstance(response, bytes):
+                response_str = response.decode("utf-8", errors="ignore").strip()
+            else:
+                response_str = str(response).strip()
             _LOGGER.debug("Command '%s' got response: %s", command, repr(response_str))
 
             return response_str

@@ -27,7 +27,7 @@ async def async_setup_entry(
 
     # Get outlet info from coordinator data
     outlet_info = coordinator.data.get("outlet_info", [])
-    
+
     # Ensure outlet_info is a list and not None
     if outlet_info is None:
         outlet_info = []
