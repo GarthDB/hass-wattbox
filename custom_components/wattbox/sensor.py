@@ -42,7 +42,7 @@ async def async_setup_entry(
 
     # Combine all sensors and filter out any None sensors
     all_sensors = sensors + power_sensors
-    valid_sensors = [sensor for sensor in all_sensors if sensor is not None]
+    valid_sensors = [sensor for sensor in all_sensors if sensor is not None] or []
 
     if valid_sensors:
         await async_add_entities(valid_sensors)

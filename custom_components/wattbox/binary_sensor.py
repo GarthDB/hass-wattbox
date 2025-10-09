@@ -33,8 +33,8 @@ async def async_setup_entry(
         WattboxUPSPowerLostBinarySensor(coordinator, config_entry.entry_id),
     ]
 
-    # Filter out any None sensors
-    valid_sensors = [sensor for sensor in sensors if sensor is not None]
+    # Filter out any None sensors and ensure we have a list
+    valid_sensors = [sensor for sensor in sensors if sensor is not None] or []
 
     if valid_sensors:
         await async_add_entities(valid_sensors)
