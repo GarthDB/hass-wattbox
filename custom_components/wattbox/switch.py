@@ -49,7 +49,13 @@ async def async_setup_entry(
         return
 
     # Filter out any None switches and add only valid ones
-    valid_switches = [switch for switch in switches if switch is not None] or []
+    # v0.2.10: Enhanced safety to prevent NoneType errors
+    valid_switches = []
+    for switch in switches:
+        if switch is not None:
+            valid_switches.append(switch)
+    
+    _LOGGER.debug(f"Switch setup: {len(switches)} total, {len(valid_switches)} valid")
 
     if valid_switches:
         _LOGGER.debug(f"Adding {len(valid_switches)} valid switches to Home Assistant")

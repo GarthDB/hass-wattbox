@@ -41,8 +41,14 @@ async def async_setup_entry(
     ]
 
     # Combine all sensors and filter out any None sensors
+    # v0.2.10: Enhanced safety to prevent NoneType errors
     all_sensors = sensors + power_sensors
-    valid_sensors = [sensor for sensor in all_sensors if sensor is not None] or []
+    valid_sensors = []
+    for sensor in all_sensors:
+        if sensor is not None:
+            valid_sensors.append(sensor)
+    
+    _LOGGER.debug(f"Sensor setup: {len(all_sensors)} total, {len(valid_sensors)} valid")
 
     if valid_sensors:
         await async_add_entities(valid_sensors)

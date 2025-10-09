@@ -34,7 +34,13 @@ async def async_setup_entry(
     ]
 
     # Filter out any None sensors and ensure we have a list
-    valid_sensors = [sensor for sensor in sensors if sensor is not None] or []
+    # v0.2.10: Enhanced safety to prevent NoneType errors
+    valid_sensors = []
+    for sensor in sensors:
+        if sensor is not None:
+            valid_sensors.append(sensor)
+    
+    _LOGGER.debug(f"Binary sensor setup: {len(sensors)} total, {len(valid_sensors)} valid")
 
     if valid_sensors:
         await async_add_entities(valid_sensors)
