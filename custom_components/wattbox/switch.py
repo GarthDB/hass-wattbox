@@ -43,7 +43,13 @@ async def async_setup_entry(
         )
         switches.append(switch)
 
-    await async_add_entities(switches)
+    # Filter out any None switches
+    valid_switches = [switch for switch in switches if switch is not None]
+
+    if valid_switches:
+        await async_add_entities(valid_switches)
+    else:
+        _LOGGER.warning("No valid switches found for Wattbox integration")
 
 
 class WattboxSwitch(WattboxOutletEntity, SwitchEntity):
