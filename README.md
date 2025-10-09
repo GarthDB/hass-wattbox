@@ -31,6 +31,33 @@ A modern Home Assistant integration for SnapAV Wattbox 800 series power manageme
 ### Monitoring Entities
 ![Monitoring Entities](docs/screenshots/06-monitoring-entities.png)
 
+## Why This Integration?
+
+While there is an existing [hass-wattbox integration](https://github.com/eseglem/hass-wattbox/), this implementation provides several key improvements:
+
+### **Modern Architecture**
+- **UI Configuration**: Easy setup through Home Assistant UI vs. YAML-only configuration
+- **Config Flow**: Proper integration setup wizard with validation
+- **Modern Patterns**: Built using current Home Assistant integration standards
+
+### **Enhanced Features**
+- **Comprehensive Entity Support**: More sensor types and better entity organization
+- **Robust Error Handling**: Graceful handling of connection issues and device unavailability
+- **Real-time Updates**: Live data with proper coordinator pattern
+- **Better Device Management**: Improved device info and entity relationships
+
+### **Development Quality**
+- **Extensive Testing**: 110+ tests with 82%+ coverage vs. limited testing
+- **Active Maintenance**: Regular updates and bug fixes
+- **Code Quality**: Modern Python patterns, type hints, and comprehensive linting
+- **Documentation**: Detailed setup guides and troubleshooting
+
+### **User Experience**
+- **Easier Setup**: No YAML configuration required
+- **Better Integration**: Proper device registry and entity organization
+- **Reliable Operation**: Robust error handling and recovery
+- **Future-Proof**: Built on modern Home Assistant patterns
+
 ## Features
 
 - **Telnet Communication**: Direct telnet connection to Wattbox 800 series devices
@@ -204,8 +231,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Based on the [bitfocus/companion-module-snapav-wattbox](https://github.com/bitfocus/companion-module-snapav-wattbox) telnet implementation
-- Inspired by the [eseglem/hass-wattbox](https://github.com/eseglem/hass-wattbox) integration
-- Built for the Home Assistant community
+- Inspired by the [eseglem/hass-wattbox](https://github.com/eseglem/hass-wattbox) integration, but completely rewritten with modern Home Assistant patterns
+- Built for the Home Assistant community with focus on reliability and ease of use
 
 ## Support
 

@@ -33,10 +33,6 @@ async def async_setup_entry(
         )
         return
 
-    # Debug: Log the type of async_add_entities
-    _LOGGER.debug(f"async_add_entities type: {type(async_add_entities)}")
-    _LOGGER.debug(f"async_add_entities callable: {callable(async_add_entities)}")
-
     coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create all status monitoring sensors
@@ -53,10 +49,6 @@ async def async_setup_entry(
     for sensor in sensors:
         if sensor is not None:
             valid_sensors.append(sensor)
-
-    _LOGGER.debug(
-        f"Binary sensor setup: {len(sensors)} total, {len(valid_sensors)} valid"
-    )
 
     if valid_sensors:
         # Try calling without await first, as it might not be async

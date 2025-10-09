@@ -99,7 +99,6 @@ class WattboxTelnetClient:
                 telnetlib3.open_connection(self._host, self._port),
                 timeout=self._timeout,
             )
-            _LOGGER.debug("Connected to %s:%s", self._host, self._port)
 
             # Wait for username prompt
             await self._wait_for_prompt(TELNET_USERNAME_PROMPT)
@@ -112,7 +111,6 @@ class WattboxTelnetClient:
             # Wait for login success
             await self._wait_for_prompt(TELNET_LOGIN_SUCCESS)
             self._connected = True
-            _LOGGER.debug("Successfully authenticated with %s", self._host)
 
         except asyncio.TimeoutError as err:
             raise WattboxConnectionError(
@@ -129,7 +127,6 @@ class WattboxTelnetClient:
             self._writer.close()
             await self._writer.wait_closed()
         self._connected = False
-        _LOGGER.debug("Disconnected from %s", self._host)
 
     async def _wait_for_prompt(self, prompt: str) -> str:
         """Wait for a specific prompt and return the response."""
@@ -158,7 +155,6 @@ class WattboxTelnetClient:
 
         self._writer.write(command + "\r\n")
         await self._writer.drain()
-        _LOGGER.debug("Sent command: %s", command)
 
     async def async_send_command(self, command: str) -> str:
         """Send a command and return the response."""
@@ -191,7 +187,6 @@ class WattboxTelnetClient:
                 response_str = response.decode("utf-8", errors="ignore").strip()
             else:
                 response_str = str(response).strip()
-            _LOGGER.debug("Command '%s' got response: %s", command, repr(response_str))
 
             return response_str
         except asyncio.TimeoutError as err:
@@ -212,12 +207,12 @@ class WattboxTelnetClient:
                     self._reader.read(1024), timeout=0.1  # Very short timeout
                 )
                 if data:
-                    _LOGGER.debug("Flushed buffer data: %s", repr(data))
+                    pass  # Data flushed
         except asyncio.TimeoutError:
             # No more data to flush
             pass
-        except Exception as e:
-            _LOGGER.debug("Error flushing buffer: %s", e)
+        except Exception:
+            pass  # Ignore flush errors
 
     async def async_get_device_info(self) -> dict[str, Any]:
         """Get device information with proper command sequencing."""

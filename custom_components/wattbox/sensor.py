@@ -24,7 +24,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox sensor entities."""
-    # CRITICAL FIX: Check if async_add_entities is None
+    # Check if async_add_entities is None
     if async_add_entities is None:
         _LOGGER.error(
             "CRITICAL: async_add_entities is None! This is a Home Assistant platform issue."
@@ -55,8 +55,6 @@ async def async_setup_entry(
     for sensor in all_sensors:
         if sensor is not None:
             valid_sensors.append(sensor)
-
-    _LOGGER.debug(f"Sensor setup: {len(all_sensors)} total, {len(valid_sensors)} valid")
 
     if valid_sensors:
         # Try calling without await first, as it might not be async

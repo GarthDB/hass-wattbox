@@ -63,16 +63,6 @@ class WattboxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             current = power_status.get("current")
             power = power_status.get("power")
 
-            # Log the status info for debugging
-            _LOGGER.debug("Status info: %s", status_info)
-            _LOGGER.debug("Power status: %s", power_status)
-            _LOGGER.debug(
-                "Extracted metrics - voltage: %s, current: %s, power: %s",
-                voltage,
-                current,
-                power,
-            )
-
             return {
                 "device_info": device_info,
                 "outlet_info": outlet_info,

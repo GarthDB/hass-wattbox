@@ -44,7 +44,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox switch entities."""
-    # CRITICAL FIX: Check if async_add_entities is None
+    # Check if async_add_entities is None
     if async_add_entities is None:
         _LOGGER.error(
             "CRITICAL: async_add_entities is None! This is a Home Assistant platform issue."
@@ -73,10 +73,7 @@ async def async_setup_entry(
     # Filter out any None switches and add only valid ones
     valid_switches = [switch for switch in switches if switch is not None]
 
-    _LOGGER.debug(f"Switch setup: {len(switches)} total, {len(valid_switches)} valid")
-
     if valid_switches:
-        _LOGGER.debug(f"Adding {len(valid_switches)} valid switches to Home Assistant")
         # Try calling without await first, as it might not be async
         try:
             if asyncio.iscoroutinefunction(async_add_entities):
