@@ -11,6 +11,26 @@ A modern Home Assistant integration for SnapAV Wattbox 800 series power manageme
 
 > **Status**: ✅ Production Ready - See coverage badge above for current test coverage
 
+## Screenshots
+
+### HACS Discovery
+![HACS Discovery](docs/screenshots/01-hacs-discovery.png)
+
+### Setup Process
+![Setup Process](docs/screenshots/02-setup-process.png)
+
+### Installation Success
+![Installation Success](docs/screenshots/03-installation-success.png)
+
+### Device Integration
+![Device Integration](docs/screenshots/04-device-integration.png)
+
+### Control Entities
+![Control Entities](docs/screenshots/05-control-entities.png)
+
+### Monitoring Entities
+![Monitoring Entities](docs/screenshots/06-monitoring-entities.png)
+
 ## Features
 
 - **Telnet Communication**: Direct telnet connection to Wattbox 800 series devices
@@ -142,7 +162,24 @@ ha-wattbox/
 │       ├── manifest.json
 │       ├── sensor.py
 │       ├── switch.py
-│       └── binary_sensor.py
+│       ├── binary_sensor.py
+│       ├── telnet_client.py
+│       ├── icon.png
+│       ├── icon@2x.png
+│       ├── logo.png
+│       ├── logo@2x.png
+│       └── hacs.json
+├── docs/
+│   ├── screenshots/
+│   │   ├── 01-hacs-discovery.png
+│   │   ├── 02-setup-process.png
+│   │   ├── 03-installation-success.png
+│   │   ├── 04-device-integration.png
+│   │   ├── 05-control-entities.png
+│   │   └── 06-monitoring-entities.png
+│   ├── HACS_INTEGRATION_GUIDE.md
+│   ├── INTEGRATION_TEST_RESULTS.md
+│   └── snapav-2.7.0.4.md
 ├── tests/
 ├── .github/workflows/
 ├── .pre-commit-config.yaml
