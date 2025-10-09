@@ -1,7 +1,7 @@
 {
   "domain": "wattbox",
   "name": "Wattbox",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "documentation": "https://github.com/GarthDB/ha-wattbox",
   "issue_tracker": "https://github.com/GarthDB/ha-wattbox/issues",
   "codeowners": [
