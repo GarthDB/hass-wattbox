@@ -183,14 +183,16 @@ async def test_async_send_command_success(
     telnet_client._reader = mock_reader
     telnet_client._writer = mock_writer
 
-    mock_reader.readuntil.return_value = b"?Firmware=1.0.0\n"
+    mock_reader.read = AsyncMock(return_value=b"?Firmware=1.0.0\n")
 
     response = await telnet_client.async_send_command("?Firmware")
 
     assert response == "?Firmware=1.0.0"
     mock_writer.write.assert_called_once_with("?Firmware\r\n")
     mock_writer.drain.assert_called_once()
-    mock_reader.readuntil.assert_called_once_with(b"\n")
+    # read is called twice: once for buffer flush, once for actual response
+    assert mock_reader.read.call_count == 2
+    mock_reader.read.assert_any_call(1024)
 
 
 @pytest.mark.asyncio

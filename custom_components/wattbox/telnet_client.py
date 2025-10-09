@@ -161,39 +161,94 @@ class WattboxTelnetClient:
         if not self._connected:
             raise WattboxConnectionError("Not connected")
 
+        # Flush any pending data in the buffer before sending new command
+        await self._flush_buffer()
+
         await self._send_command(command)
 
-        # Read the response
+        # Wait for command to be processed
+        await asyncio.sleep(0.2)
+
+        # Read the response with a more flexible approach
         if not self._reader:
             raise WattboxConnectionError("Not connected")
 
         try:
+            # Use read() instead of readuntil() for more flexible response handling
+            # This allows us to get whatever response is available
             response = await asyncio.wait_for(
-                self._reader.readuntil(b"\n"),
+                self._reader.read(1024),
                 timeout=self._timeout,
             )
-            return response.decode().strip()
+            
+            # Decode and clean up the response
+            response_str = response.decode('utf-8', errors='ignore').strip()
+            _LOGGER.debug("Command '%s' got response: %s", command, repr(response_str))
+            
+            return response_str
         except asyncio.TimeoutError as err:
             raise WattboxConnectionError(
                 f"Timeout waiting for response to command: {command}"
             ) from err
 
+    async def _flush_buffer(self) -> None:
+        """Flush any pending data in the telnet buffer."""
+        if not self._reader:
+            return
+        
+        try:
+            # Try to read any pending data with a short timeout
+            # Use a more robust approach that handles mocks
+            if hasattr(self._reader, 'read') and callable(getattr(self._reader, 'read')):
+                data = await asyncio.wait_for(
+                    self._reader.read(1024),
+                    timeout=0.1  # Very short timeout
+                )
+                if data:
+                    _LOGGER.debug("Flushed buffer data: %s", repr(data))
+        except asyncio.TimeoutError:
+            # No more data to flush
+            pass
+        except Exception as e:
+            _LOGGER.debug("Error flushing buffer: %s", e)
+
     async def async_get_device_info(self) -> dict[str, Any]:
-        """Get device information."""
+        """Get device information with proper command sequencing."""
         if not self._connected:
             await self.async_connect()
 
+        # Get device info in sequence with proper delays to avoid command response mixing
         # Only get device info once per connection to avoid constant changes
+        
+        # Use a more robust approach: send all commands and collect responses
+        commands = []
         if not self._device_data["device_info"].get("hardware_version"):
-            await self._get_firmware_info()
+            commands.append(("?Firmware", "_parse_firmware_data"))
         if not self._device_data["device_info"].get("model"):
-            await self._get_model_info()
+            commands.append(("?Model", "_parse_model_data"))
         if not self._device_data["device_info"].get("serial_number"):
-            await self._get_service_tag()
+            commands.append(("?ServiceTag", "_parse_service_tag_data"))
         if not self._device_data["device_info"].get("hostname"):
-            await self._get_hostname()
+            commands.append(("?Hostname", "_parse_hostname_data"))
         if not self._device_data["device_info"].get("auto_reboot"):
-            await self._get_auto_reboot()
+            commands.append(("?AutoReboot", "_parse_auto_reboot_data"))
+
+        # Execute commands with proper sequencing
+        for command, parser_method in commands:
+            try:
+                response = await self.async_send_command(command)
+                if response and "=" in response:
+                    data = response.split("=")[1].strip()
+                    # Call the appropriate parser method
+                    getattr(self, parser_method)(data)
+                else:
+                    _LOGGER.warning("No data in response for %s: %s", command, response)
+                
+                # Extra delay between commands to ensure proper sequencing
+                await asyncio.sleep(0.3)
+                
+            except Exception as e:
+                _LOGGER.warning("Failed to get %s: %s", command, e)
 
         # Fix field assignments if they appear to be swapped
         self._fix_field_assignments()
@@ -326,6 +381,30 @@ class WattboxTelnetClient:
         if current_firmware != firmware_version:
             _LOGGER.info("Firmware version: %s", firmware_version)
             self._device_data["device_info"]["hardware_version"] = firmware_version
+
+    def _parse_model_data(self, model_data: str) -> None:
+        """Parse model data and store it."""
+        if model_data and model_data.strip():
+            _LOGGER.info("Model: %s", model_data)
+            self._device_data["device_info"]["model"] = model_data.strip()
+
+    def _parse_service_tag_data(self, service_tag_data: str) -> None:
+        """Parse service tag data and store it."""
+        if service_tag_data and service_tag_data.strip():
+            _LOGGER.info("Service tag: %s", service_tag_data)
+            self._device_data["device_info"]["serial_number"] = service_tag_data.strip()
+
+    def _parse_hostname_data(self, hostname_data: str) -> None:
+        """Parse hostname data and store it."""
+        if hostname_data and hostname_data.strip():
+            _LOGGER.info("Hostname: %s", hostname_data)
+            self._device_data["device_info"]["hostname"] = hostname_data.strip()
+
+    def _parse_auto_reboot_data(self, auto_reboot_data: str) -> None:
+        """Parse auto reboot data and store it."""
+        if auto_reboot_data and auto_reboot_data.strip():
+            _LOGGER.info("Auto reboot: %s", auto_reboot_data)
+            self._device_data["device_info"]["auto_reboot"] = auto_reboot_data.strip()
 
     async def _get_model_info(self) -> None:
         """Get model information."""
