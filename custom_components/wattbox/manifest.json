@@ -12,5 +12,6 @@
   "issue_tracker": "https://github.com/GarthDB/ha-wattbox/issues",
   "requirements": [
     "telnetlib3>=1.0.0"
-  ]
+  ],
+  "version": "0.2.17"
 }
