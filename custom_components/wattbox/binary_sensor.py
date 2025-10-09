@@ -32,7 +32,7 @@ async def async_setup_entry(
             "async_add_entities is None! This is a Home Assistant platform issue."
         )
         return
-    
+
     # Debug: Log the type of async_add_entities
     _LOGGER.debug(f"async_add_entities type: {type(async_add_entities)}")
     _LOGGER.debug(f"async_add_entities callable: {callable(async_add_entities)}")

@@ -18,6 +18,26 @@ from .entity import WattboxOutletEntity
 _LOGGER = logging.getLogger(__name__)
 
 
+def _create_outlet_switches(
+    coordinator: WattboxDataUpdateCoordinator,
+    config_entry: ConfigEntry,
+    outlet_info: list,
+) -> list[WattboxSwitch]:
+    """Create WattboxSwitch instances for outlets."""
+    switches = []
+    for i, _outlet in enumerate(outlet_info):
+        switch = WattboxSwitch(
+            coordinator=coordinator,
+            device_info=(
+                coordinator.data.get("device_info", {}) if coordinator.data else {}
+            ),
+            unique_id=f"{config_entry.entry_id}_outlet_{i + 1}",
+            outlet_number=i + 1,
+        )
+        switches.append(switch)
+    return switches
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -48,23 +68,10 @@ async def async_setup_entry(
         outlet_info = [{"state": 0} for _ in range(18)]
 
     # Create switches for each outlet
-    switches = []
-    for i, _outlet in enumerate(outlet_info):
-        switch = WattboxSwitch(
-            coordinator=coordinator,
-            device_info=(
-                coordinator.data.get("device_info", {}) if coordinator.data else {}
-            ),
-            unique_id=f"{config_entry.entry_id}_outlet_{i + 1}",
-            outlet_number=i + 1,
-        )
-        switches.append(switch)
+    switches = _create_outlet_switches(coordinator, config_entry, outlet_info)
 
     # Filter out any None switches and add only valid ones
-    valid_switches = []
-    for switch in switches:
-        if switch is not None:
-            valid_switches.append(switch)
+    valid_switches = [switch for switch in switches if switch is not None]
 
     _LOGGER.debug(f"Switch setup: {len(switches)} total, {len(valid_switches)} valid")
 
