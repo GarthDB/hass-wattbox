@@ -22,7 +22,10 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox binary sensor entities."""
+    _LOGGER.error("DIAGNOSTIC: binary_sensor.py v0.2.11 - async_setup_entry called")
+
     coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+    _LOGGER.error(f"DIAGNOSTIC: coordinator = {coordinator}")
 
     # Create all status monitoring sensors
     sensors = [
@@ -32,18 +35,23 @@ async def async_setup_entry(
         WattboxUPSConnectedBinarySensor(coordinator, config_entry.entry_id),
         WattboxUPSPowerLostBinarySensor(coordinator, config_entry.entry_id),
     ]
+    _LOGGER.error(f"DIAGNOSTIC: sensors = {sensors}")
 
     # Filter out any None sensors and ensure we have a list
-    # v0.2.10: Enhanced safety to prevent NoneType errors
+    # v0.2.11: DIAGNOSTIC VERSION - Enhanced safety to prevent NoneType errors
     valid_sensors = []
-    for sensor in sensors:
+    for i, sensor in enumerate(sensors):
+        _LOGGER.error(f"DIAGNOSTIC: sensor[{i}] = {sensor}, type = {type(sensor)}")
         if sensor is not None:
             valid_sensors.append(sensor)
 
-    _LOGGER.debug(f"Binary sensor setup: {len(sensors)} total, {len(valid_sensors)} valid")
+    _LOGGER.error(f"DIAGNOSTIC: valid_sensors = {valid_sensors}, type = {type(valid_sensors)}")
+    _LOGGER.error(f"DIAGNOSTIC: About to call async_add_entities with {len(valid_sensors)} entities")
 
     if valid_sensors:
+        _LOGGER.error("DIAGNOSTIC: Calling async_add_entities with valid_sensors")
         await async_add_entities(valid_sensors)
+        _LOGGER.error("DIAGNOSTIC: async_add_entities completed successfully")
     else:
         _LOGGER.warning("No valid binary sensors to add")
 
