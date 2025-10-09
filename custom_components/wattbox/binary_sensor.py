@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -25,12 +26,16 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Wattbox binary sensor entities."""
-    # Check if async_add_entities is None
+    # Check if async_add_entities is None or not callable
     if async_add_entities is None:
         _LOGGER.error(
             "async_add_entities is None! This is a Home Assistant platform issue."
         )
         return
+    
+    # Debug: Log the type of async_add_entities
+    _LOGGER.debug(f"async_add_entities type: {type(async_add_entities)}")
+    _LOGGER.debug(f"async_add_entities callable: {callable(async_add_entities)}")
 
     coordinator: WattboxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
 
@@ -54,7 +59,15 @@ async def async_setup_entry(
     )
 
     if valid_sensors:
-        await async_add_entities(valid_sensors)
+        # Try calling without await first, as it might not be async
+        try:
+            if asyncio.iscoroutinefunction(async_add_entities):
+                await async_add_entities(valid_sensors)
+            else:
+                async_add_entities(valid_sensors)
+        except Exception as e:
+            _LOGGER.error(f"Error adding entities: {e}")
+            _LOGGER.error(f"async_add_entities type: {type(async_add_entities)}")
     else:
         _LOGGER.warning("No valid binary sensors to add")
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 
 from homeassistant.components.sensor import SensorEntity
@@ -58,7 +59,15 @@ async def async_setup_entry(
     _LOGGER.debug(f"Sensor setup: {len(all_sensors)} total, {len(valid_sensors)} valid")
 
     if valid_sensors:
-        await async_add_entities(valid_sensors)
+        # Try calling without await first, as it might not be async
+        try:
+            if asyncio.iscoroutinefunction(async_add_entities):
+                await async_add_entities(valid_sensors)
+            else:
+                async_add_entities(valid_sensors)
+        except Exception as e:
+            _LOGGER.error(f"Error adding entities: {e}")
+            _LOGGER.error(f"async_add_entities type: {type(async_add_entities)}")
     else:
         _LOGGER.warning("No valid sensors to add")
 

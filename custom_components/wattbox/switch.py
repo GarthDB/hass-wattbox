@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -69,7 +70,15 @@ async def async_setup_entry(
 
     if valid_switches:
         _LOGGER.debug(f"Adding {len(valid_switches)} valid switches to Home Assistant")
-        await async_add_entities(valid_switches)
+        # Try calling without await first, as it might not be async
+        try:
+            if asyncio.iscoroutinefunction(async_add_entities):
+                await async_add_entities(valid_switches)
+            else:
+                async_add_entities(valid_switches)
+        except Exception as e:
+            _LOGGER.error(f"Error adding entities: {e}")
+            _LOGGER.error(f"async_add_entities type: {type(async_add_entities)}")
     else:
         _LOGGER.warning("No valid switches found for Wattbox integration")
 
