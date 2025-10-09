@@ -180,11 +180,11 @@ class WattboxTelnetClient:
                 self._reader.read(1024),
                 timeout=self._timeout,
             )
-            
+
             # Decode and clean up the response
-            response_str = response.decode('utf-8', errors='ignore').strip()
+            response_str = response.decode("utf-8", errors="ignore").strip()
             _LOGGER.debug("Command '%s' got response: %s", command, repr(response_str))
-            
+
             return response_str
         except asyncio.TimeoutError as err:
             raise WattboxConnectionError(
@@ -195,14 +195,13 @@ class WattboxTelnetClient:
         """Flush any pending data in the telnet buffer."""
         if not self._reader:
             return
-        
+
         try:
             # Try to read any pending data with a short timeout
             # Use a more robust approach that handles mocks
-            if hasattr(self._reader, 'read') and callable(getattr(self._reader, 'read')):
+            if hasattr(self._reader, "read") and callable(self._reader.read):
                 data = await asyncio.wait_for(
-                    self._reader.read(1024),
-                    timeout=0.1  # Very short timeout
+                    self._reader.read(1024), timeout=0.1  # Very short timeout
                 )
                 if data:
                     _LOGGER.debug("Flushed buffer data: %s", repr(data))
@@ -219,8 +218,16 @@ class WattboxTelnetClient:
 
         # Get device info in sequence with proper delays to avoid command response mixing
         # Only get device info once per connection to avoid constant changes
-        
-        # Use a more robust approach: send all commands and collect responses
+        commands = self._build_device_info_commands()
+        await self._execute_device_info_commands(commands)
+
+        # Fix field assignments if they appear to be swapped
+        self._fix_field_assignments()
+
+        return self._device_data["device_info"]
+
+    def _build_device_info_commands(self) -> list[tuple[str, str]]:
+        """Build list of commands to execute for device info."""
         commands = []
         if not self._device_data["device_info"].get("hardware_version"):
             commands.append(("?Firmware", "_parse_firmware_data"))
@@ -232,8 +239,12 @@ class WattboxTelnetClient:
             commands.append(("?Hostname", "_parse_hostname_data"))
         if not self._device_data["device_info"].get("auto_reboot"):
             commands.append(("?AutoReboot", "_parse_auto_reboot_data"))
+        return commands
 
-        # Execute commands with proper sequencing
+    async def _execute_device_info_commands(
+        self, commands: list[tuple[str, str]]
+    ) -> None:
+        """Execute device info commands with proper sequencing."""
         for command, parser_method in commands:
             try:
                 response = await self.async_send_command(command)
@@ -243,17 +254,11 @@ class WattboxTelnetClient:
                     getattr(self, parser_method)(data)
                 else:
                     _LOGGER.warning("No data in response for %s: %s", command, response)
-                
+
                 # Extra delay between commands to ensure proper sequencing
                 await asyncio.sleep(0.3)
-                
             except Exception as e:
                 _LOGGER.warning("Failed to get %s: %s", command, e)
-
-        # Fix field assignments if they appear to be swapped
-        self._fix_field_assignments()
-
-        return self._device_data["device_info"]
 
     def _fix_field_assignments(self) -> None:
         """Fix field assignments if they appear to be swapped."""
