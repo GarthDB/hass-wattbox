@@ -183,11 +183,17 @@ class WattboxTelnetClient:
         if not self._connected:
             await self.async_connect()
 
-        await self._get_firmware_info()
-        await self._get_model_info()
-        await self._get_service_tag()
-        await self._get_hostname()
-        await self._get_auto_reboot()
+        # Only get device info once per connection to avoid constant changes
+        if not self._device_data["device_info"].get("hardware_version"):
+            await self._get_firmware_info()
+        if not self._device_data["device_info"].get("model"):
+            await self._get_model_info()
+        if not self._device_data["device_info"].get("serial_number"):
+            await self._get_service_tag()
+        if not self._device_data["device_info"].get("hostname"):
+            await self._get_hostname()
+        if not self._device_data["device_info"].get("auto_reboot"):
+            await self._get_auto_reboot()
 
         return self._device_data["device_info"]
 
@@ -195,35 +201,82 @@ class WattboxTelnetClient:
         """Get firmware information."""
         try:
             response = await self.async_send_command(TELNET_CMD_FIRMWARE)
+            _LOGGER.debug("Firmware response: %s", response)
+
             if "=" in response:
                 firmware_data = response.split("=")[1].strip()
-                # Parse firmware data - format is typically
-                # "version,revision,status,flag1,flag2,flag3,flag4"
-                # We want just the version and revision for display
-                if firmware_data and firmware_data != "0,0,Good,False,0,False,False":
-                    parts = firmware_data.split(",")
-                    if len(parts) >= 2:
-                        version = parts[0].strip()
-                        revision = parts[1].strip()
-                        if version and revision and version != "0" and revision != "0":
-                            self._device_data["device_info"][
-                                "hardware_version"
-                            ] = f"{version}.{revision}"
-                        else:
-                            self._device_data["device_info"][
-                                "hardware_version"
-                            ] = "Unknown"
-                    else:
-                        self._device_data["device_info"][
-                            "hardware_version"
-                        ] = firmware_data
-                else:
-                    self._device_data["device_info"]["hardware_version"] = "Unknown"
+                _LOGGER.debug("Firmware data: %s", firmware_data)
+                self._parse_firmware_data(firmware_data)
             else:
+                _LOGGER.warning("No firmware data in response: %s", response)
                 self._device_data["device_info"]["hardware_version"] = None
         except Exception as e:
             _LOGGER.warning("Failed to get firmware info: %s", e)
             self._device_data["device_info"]["hardware_version"] = None
+
+    def _parse_firmware_data(self, firmware_data: str) -> None:
+        """Parse firmware data from device response."""
+        if not firmware_data or firmware_data == "0,0,Good,False,0,False,False":
+            self._device_data["device_info"]["hardware_version"] = "Unknown"
+            return
+
+        parts = firmware_data.split(",")
+
+        if len(parts) == 1:
+            self._parse_simple_firmware(parts[0].strip())
+        elif len(parts) >= 2:
+            self._parse_complex_firmware(parts[0].strip(), parts[1].strip())
+        else:
+            _LOGGER.warning("Invalid firmware data format: %s", firmware_data)
+            self._device_data["device_info"]["hardware_version"] = "Unknown"
+
+    def _parse_simple_firmware(self, firmware_version: str) -> None:
+        """Parse simple firmware format (e.g., '1.0.0')."""
+        if firmware_version and firmware_version != "0":
+            self._update_firmware_if_different(firmware_version)
+        else:
+            self._device_data["device_info"]["hardware_version"] = "Unknown"
+
+    def _parse_complex_firmware(self, version: str, revision: str) -> None:
+        """Parse complex firmware format (version,revision,status,flags)."""
+        if not self._validate_firmware_values(version, revision):
+            return
+
+        if version and revision and version != "0" and revision != "0":
+            firmware_version = f"{version}.{revision}"
+            self._update_firmware_if_different(firmware_version)
+        else:
+            self._device_data["device_info"]["hardware_version"] = "Unknown"
+
+    def _validate_firmware_values(self, version: str, revision: str) -> bool:
+        """Validate that values look like firmware, not power readings."""
+        try:
+            version_float = float(version)
+            revision_float = float(revision)
+
+            # If values are too large, this might be power data, not firmware
+            if version_float > 10 or revision_float > 10:
+                _LOGGER.warning(
+                    "Firmware data looks like power readings: %s,%s. Skipping.",
+                    version,
+                    revision,
+                )
+                self._device_data["device_info"]["hardware_version"] = "Unknown"
+                return False
+
+        except ValueError:
+            _LOGGER.warning("Invalid firmware data format: %s,%s", version, revision)
+            self._device_data["device_info"]["hardware_version"] = "Unknown"
+            return False
+
+        return True
+
+    def _update_firmware_if_different(self, firmware_version: str) -> None:
+        """Update firmware version only if it's different."""
+        current_firmware = self._device_data["device_info"].get("hardware_version")
+        if current_firmware != firmware_version:
+            _LOGGER.info("Firmware version: %s", firmware_version)
+            self._device_data["device_info"]["hardware_version"] = firmware_version
 
     async def _get_model_info(self) -> None:
         """Get model information."""
