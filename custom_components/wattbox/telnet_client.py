@@ -195,7 +195,56 @@ class WattboxTelnetClient:
         if not self._device_data["device_info"].get("auto_reboot"):
             await self._get_auto_reboot()
 
+        # Fix field assignments if they appear to be swapped
+        self._fix_field_assignments()
+
         return self._device_data["device_info"]
+
+    def _fix_field_assignments(self) -> None:
+        """Fix field assignments if they appear to be swapped."""
+        device_info = self._device_data["device_info"]
+
+        # Check if fields appear to be swapped based on their content patterns
+        model = device_info.get("model", "")
+        serial = device_info.get("serial_number", "")
+        hostname = device_info.get("hostname", "")
+
+        # If model looks like firmware version (e.g., "2.8.0.0") and we don't have
+        # hardware_version
+        if (
+            model
+            and "." in model
+            and len(model.split(".")) == 4
+            and not device_info.get("hardware_version")
+        ):
+            _LOGGER.info(
+                "Model field contains firmware version, moving to hardware_version: %s",
+                model,
+            )
+            device_info["hardware_version"] = model
+            device_info["model"] = None
+
+        # If serial looks like model number (e.g., "WB-800-IPVM-12") and we don't have model
+        if serial and serial.startswith("WB-") and not device_info.get("model"):
+            _LOGGER.info(
+                "Serial field contains model number, moving to model: %s", serial
+            )
+            device_info["model"] = serial
+            device_info["serial_number"] = None
+
+        # If hostname looks like service tag (e.g., "ST201916431G842A") and we don't
+        # have serial_number
+        if (
+            hostname
+            and hostname.startswith("ST")
+            and not device_info.get("serial_number")
+        ):
+            _LOGGER.info(
+                "Hostname field contains service tag, moving to serial_number: %s",
+                hostname,
+            )
+            device_info["serial_number"] = hostname
+            device_info["hostname"] = None
 
     async def _get_firmware_info(self) -> None:
         """Get firmware information."""
@@ -282,31 +331,78 @@ class WattboxTelnetClient:
         """Get model information."""
         try:
             response = await self.async_send_command(TELNET_CMD_MODEL)
-            self._device_data["device_info"]["model"] = (
-                response.split("=")[1] if "=" in response else None
-            )
+            _LOGGER.debug("Model response: %s", response)
+            if "=" in response:
+                model_data = response.split("=")[1].strip()
+                _LOGGER.debug("Model data: %s", model_data)
+                # The ?Model command should return the actual model number like
+                # "WB-800-IPVM-6" But if we're getting firmware version, we need to
+                # handle it differently
+                if model_data and not model_data.startswith("WB-"):
+                    # If it looks like firmware version (e.g., "2.8.0.0"), this might be
+                    # wrong command
+                    _LOGGER.warning(
+                        "Model data looks like firmware version: %s", model_data
+                    )
+                    self._device_data["device_info"]["model"] = None
+                else:
+                    self._device_data["device_info"]["model"] = model_data
+            else:
+                self._device_data["device_info"]["model"] = None
         except Exception as e:
             _LOGGER.warning("Failed to get model info: %s", e)
+            self._device_data["device_info"]["model"] = None
 
     async def _get_service_tag(self) -> None:
         """Get service tag information."""
         try:
             response = await self.async_send_command(TELNET_CMD_SERVICE_TAG)
-            self._device_data["device_info"]["serial_number"] = (
-                response.split("=")[1] if "=" in response else None
-            )
+            _LOGGER.debug("Service tag response: %s", response)
+            if "=" in response:
+                service_tag = response.split("=")[1].strip()
+                _LOGGER.debug("Service tag data: %s", service_tag)
+                # The ?ServiceTag command should return the service tag like
+                # "ST191500681E8422" But if we're getting model number, we need to
+                # handle it differently
+                if service_tag and service_tag.startswith("WB-"):
+                    # If it looks like model number (e.g., "WB-800-IPVM-12"), this might
+                    # be wrong command
+                    _LOGGER.warning(
+                        "Service tag data looks like model number: %s", service_tag
+                    )
+                    self._device_data["device_info"]["serial_number"] = None
+                else:
+                    self._device_data["device_info"]["serial_number"] = service_tag
+            else:
+                self._device_data["device_info"]["serial_number"] = None
         except Exception as e:
             _LOGGER.warning("Failed to get service tag: %s", e)
+            self._device_data["device_info"]["serial_number"] = None
 
     async def _get_hostname(self) -> None:
         """Get hostname information."""
         try:
             response = await self.async_send_command(TELNET_CMD_HOSTNAME)
-            self._device_data["device_info"]["hostname"] = (
-                response.split("=")[1] if "=" in response else None
-            )
+            _LOGGER.debug("Hostname response: %s", response)
+            if "=" in response:
+                hostname = response.split("=")[1].strip()
+                _LOGGER.debug("Hostname data: %s", hostname)
+                # The ?Hostname command should return the hostname like "WattBox"
+                # But if we're getting service tag, we need to handle it differently
+                if hostname and hostname.startswith("ST") and len(hostname) > 10:
+                    # If it looks like service tag (e.g., "ST201916431G842A"), this might
+                    # be wrong command
+                    _LOGGER.warning(
+                        "Hostname data looks like service tag: %s", hostname
+                    )
+                    self._device_data["device_info"]["hostname"] = None
+                else:
+                    self._device_data["device_info"]["hostname"] = hostname
+            else:
+                self._device_data["device_info"]["hostname"] = None
         except Exception as e:
             _LOGGER.warning("Failed to get hostname: %s", e)
+            self._device_data["device_info"]["hostname"] = None
 
     async def _get_auto_reboot(self) -> None:
         """Get auto reboot setting."""

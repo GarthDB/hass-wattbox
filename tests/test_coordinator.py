@@ -41,7 +41,7 @@ def mock_telnet_client() -> WattboxTelnetClient:
     client.async_disconnect = AsyncMock()
     client.async_get_device_info = AsyncMock()
     client.async_get_outlet_status = AsyncMock()
-    client.async_get_power_metrics = AsyncMock()
+    client.async_get_status_info = AsyncMock()
     return client
 
 
@@ -106,10 +106,12 @@ async def test_async_update_data_success(
         {"state": 0, "name": "Outlet 2"},
     ]
 
-    mock_telnet_client.async_get_power_metrics.return_value = {
-        "voltage": 120.5,
-        "current": 1.2,
-        "power": 144.6,
+    mock_telnet_client.async_get_status_info.return_value = {
+        "power_status": {
+            "voltage": 120.5,
+            "current": 1.2,
+            "power": 144.6,
+        }
     }
 
     data = await coordinator._async_update_data()
@@ -125,7 +127,7 @@ async def test_async_update_data_success(
     mock_telnet_client.async_connect.assert_called_once()
     mock_telnet_client.async_get_device_info.assert_called_once()
     mock_telnet_client.async_get_outlet_status.assert_called_once_with(18)
-    mock_telnet_client.async_get_power_metrics.assert_called_once()
+    mock_telnet_client.async_get_status_info.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -212,10 +214,12 @@ async def test_async_update_data_already_connected(
     }
 
     mock_telnet_client.async_get_outlet_status.return_value = []
-    mock_telnet_client.async_get_power_metrics.return_value = {
-        "voltage": None,
-        "current": None,
-        "power": None,
+    mock_telnet_client.async_get_status_info.return_value = {
+        "power_status": {
+            "voltage": None,
+            "current": None,
+            "power": None,
+        }
     }
 
     data = await coordinator._async_update_data()
@@ -242,10 +246,12 @@ async def test_async_update_data_outlet_info_error(
     # Mock outlet status error
     mock_telnet_client.async_get_outlet_status.side_effect = Exception("Outlet error")
 
-    mock_telnet_client.async_get_power_metrics.return_value = {
-        "voltage": None,
-        "current": None,
-        "power": None,
+    mock_telnet_client.async_get_status_info.return_value = {
+        "power_status": {
+            "voltage": None,
+            "current": None,
+            "power": None,
+        }
     }
 
     with pytest.raises(UpdateFailed, match="Unexpected error: Outlet error"):
@@ -268,8 +274,8 @@ async def test_async_update_data_power_metrics_error(
 
     mock_telnet_client.async_get_outlet_status.return_value = []
 
-    # Mock power metrics error
-    mock_telnet_client.async_get_power_metrics.side_effect = Exception("Power error")
+    # Mock status info error
+    mock_telnet_client.async_get_status_info.side_effect = Exception("Power error")
 
     with pytest.raises(UpdateFailed, match="Unexpected error: Power error"):
         await coordinator._async_update_data()
