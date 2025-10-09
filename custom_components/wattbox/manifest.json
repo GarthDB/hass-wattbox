@@ -1,7 +1,6 @@
 {
   "domain": "wattbox",
   "name": "Wattbox",
-  "version": "0.2.17",
   "codeowners": [
     "@GarthDB"
   ],
