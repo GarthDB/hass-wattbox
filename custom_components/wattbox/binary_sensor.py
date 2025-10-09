@@ -33,7 +33,13 @@ async def async_setup_entry(
         WattboxUPSPowerLostBinarySensor(coordinator, config_entry.entry_id),
     ]
 
-    await async_add_entities(sensors)
+    # Filter out any None sensors
+    valid_sensors = [sensor for sensor in sensors if sensor is not None]
+
+    if valid_sensors:
+        await async_add_entities(valid_sensors)
+    else:
+        _LOGGER.warning("No valid binary sensors to add")
 
 
 class WattboxStatusBinarySensor(WattboxDeviceEntity, BinarySensorEntity):

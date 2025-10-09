@@ -509,11 +509,8 @@ class WattboxTelnetClient:
     async def _get_outlet_count(self) -> int:
         """Get the number of outlets on the device."""
         try:
-            # First command returns empty, second command returns the first command's response
-            await self.async_send_command(TELNET_CMD_OUTLET_COUNT)  # This returns empty
-            response = await self.async_send_command(
-                "?Firmware"
-            )  # This returns the outlet count
+            # Use the new sequencing approach - send command directly
+            response = await self.async_send_command(TELNET_CMD_OUTLET_COUNT)
 
             if "=" in response and "OutletCount" in response:
                 count = int(response.split("=")[1])
@@ -551,16 +548,8 @@ class WattboxTelnetClient:
     async def _get_outlet_states(self) -> None:
         """Get outlet states."""
         try:
-            # The device has a command delay - each command returns the response
-            # from the previous command. We need to send a dummy command first
-            # to get the outlet status response
-            await self.async_send_command("?Firmware")  # This returns empty
-            await self.async_send_command(
-                TELNET_CMD_OUTLET_STATUS
-            )  # This returns the outlet status
-            response = await self.async_send_command(
-                "?Firmware"
-            )  # This returns the outlet status
+            # Use the new sequencing approach - send command directly
+            response = await self.async_send_command(TELNET_CMD_OUTLET_STATUS)
 
             _LOGGER.debug("Outlet status response: %s", response)
 
@@ -586,16 +575,8 @@ class WattboxTelnetClient:
     async def _get_outlet_names(self) -> None:
         """Get outlet names."""
         try:
-            # The device has a command delay - each command returns the response
-            # from the previous command. We need to send a dummy command first
-            # to get the outlet names response
-            await self.async_send_command("?Firmware")  # This returns empty
-            await self.async_send_command(
-                TELNET_CMD_OUTLET_NAME
-            )  # This returns the outlet names
-            response = await self.async_send_command(
-                "?Firmware"
-            )  # This returns the outlet names
+            # Use the new sequencing approach - send command directly
+            response = await self.async_send_command(TELNET_CMD_OUTLET_NAME)
 
             _LOGGER.debug("Outlet names response: %s", response)
 

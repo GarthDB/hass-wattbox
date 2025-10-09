@@ -40,7 +40,14 @@ async def async_setup_entry(
         WattboxPowerSensor(coordinator, config_entry.entry_id),
     ]
 
-    await async_add_entities(sensors + power_sensors)
+    # Combine all sensors and filter out any None sensors
+    all_sensors = sensors + power_sensors
+    valid_sensors = [sensor for sensor in all_sensors if sensor is not None]
+
+    if valid_sensors:
+        await async_add_entities(valid_sensors)
+    else:
+        _LOGGER.warning("No valid sensors to add")
 
 
 class WattboxFirmwareSensor(WattboxDeviceEntity, SensorEntity):

@@ -238,26 +238,19 @@ async def test_async_get_outlet_status(telnet_client: WattboxTelnetClient) -> No
         patch.object(telnet_client, "async_connect"),
         patch.object(telnet_client, "async_send_command") as mock_send,
     ):
-        # Mock responses for the new command delay behavior:
-        # 1. Get outlet count: ?OutletCount -> empty, ?Firmware -> ?OutletCount=12
-        # 2. Get outlet status: ?Firmware -> empty, ?OutletStatus -> empty,
-        #    ?Firmware -> ?OutletStatus=...
-        # 3. Get outlet names: ?Firmware -> empty, ?OutletName -> empty,
-        #    ?Firmware -> ?OutletName=...
+        # Mock responses for the simplified sequencing:
+        # 1. Get outlet count: ?OutletCount -> ?OutletCount=12
+        # 2. Get outlet status: ?OutletStatus -> ?OutletStatus=1,0,1,0,1,0,1,0,1,0,1,0
+        # 3. Get outlet names: ?OutletName -> ?OutletName={Outlet 1},{Outlet 2},...
         mock_send.side_effect = [
-            # Outlet count sequence
-            "",  # ?OutletCount returns empty
-            "?OutletCount=12",  # ?Firmware returns outlet count
-            # Outlet status sequence
-            "",  # ?Firmware returns empty
-            "",  # ?OutletStatus returns empty
-            "?OutletStatus=1,0,1,0,1,0,1,0,1,0,1,0",  # ?Firmware returns outlet status
-            # Outlet names sequence
-            "",  # ?Firmware returns empty
-            "",  # ?OutletName returns empty
+            # Outlet count
+            "?OutletCount=12",
+            # Outlet status
+            "?OutletStatus=1,0,1,0,1,0,1,0,1,0,1,0",
+            # Outlet names
             "?OutletName={Outlet 1},{Outlet 2},{Outlet 3},{Outlet 4},"
             "{Outlet 5},{Outlet 6},{Outlet 7},{Outlet 8},{Outlet 9},"
-            "{Outlet 10},{Outlet 11},{Outlet 12}",  # ?Firmware returns outlet names
+            "{Outlet 10},{Outlet 11},{Outlet 12}",
         ]
 
         outlets = await telnet_client.async_get_outlet_status()
@@ -499,13 +492,13 @@ async def test_get_outlet_states_invalid_response(
     with patch.object(
         telnet_client, "async_send_command", new_callable=AsyncMock
     ) as mock_send:
-        # Mock the three calls in sequence
-        mock_send.side_effect = ["", "", "InvalidResponse"]
+        # Mock the single call with invalid response
+        mock_send.return_value = "InvalidResponse"
 
         await telnet_client._get_outlet_states()
 
         # Should not raise exception, just log warning
-        assert mock_send.call_count == 3
+        assert mock_send.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -516,13 +509,13 @@ async def test_get_outlet_names_invalid_response(
     with patch.object(
         telnet_client, "async_send_command", new_callable=AsyncMock
     ) as mock_send:
-        # Mock the three calls in sequence
-        mock_send.side_effect = ["", "", "InvalidResponse"]
+        # Mock the single call with invalid response
+        mock_send.return_value = "InvalidResponse"
 
         await telnet_client._get_outlet_names()
 
         # Should not raise exception, just log warning
-        assert mock_send.call_count == 3
+        assert mock_send.call_count == 1
 
 
 def test_device_data_structure(telnet_client: WattboxTelnetClient) -> None:
