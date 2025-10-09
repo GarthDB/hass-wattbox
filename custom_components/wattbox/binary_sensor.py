@@ -39,7 +39,7 @@ async def async_setup_entry(
     for sensor in sensors:
         if sensor is not None:
             valid_sensors.append(sensor)
-    
+
     _LOGGER.debug(f"Binary sensor setup: {len(sensors)} total, {len(valid_sensors)} valid")
 
     if valid_sensors:

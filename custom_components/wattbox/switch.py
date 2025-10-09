@@ -54,7 +54,7 @@ async def async_setup_entry(
     for switch in switches:
         if switch is not None:
             valid_switches.append(switch)
-    
+
     _LOGGER.debug(f"Switch setup: {len(switches)} total, {len(valid_switches)} valid")
 
     if valid_switches:
