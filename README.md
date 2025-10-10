@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/GarthDB/ha-wattbox/branch/main/graph/badge.svg)](https://codecov.io/gh/GarthDB/ha-wattbox)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2023.1.0+-blue.svg)](https://www.home-assistant.io/)
-[![HACS](https://img.shields.io/badge/HACS-Custom-red.svg)](https://hacs.xyz/)
+[![HACS](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modern Home Assistant integration for SnapAV Wattbox 800 series power management devices using telnet communication.
@@ -79,10 +79,10 @@ While there is an existing [hass-wattbox integration](https://github.com/eseglem
 
 1. Open HACS in Home Assistant
 2. Go to Integrations
-3. Click the three dots menu
-4. Select "Custom repositories"
-5. Add this repository URL
-6. Search for "Wattbox" and install
+3. Click "+ Explore & Download Repositories"
+4. Search for "Wattbox"
+5. Click "Download"
+6. Restart Home Assistant
 
 ### Manual Installation
 
