@@ -13,6 +13,8 @@ from .const import DEVICE_MANUFACTURER, DEVICE_MODEL, DOMAIN
 class WattboxEntity(CoordinatorEntity):
     """Base entity for Wattbox devices."""
 
+    _attr_has_entity_name = True
+
     def __init__(
         self,
         coordinator: Any,

@@ -102,6 +102,42 @@ While there is an existing [hass-wattbox integration](https://github.com/eseglem
    - **Password**: Device password (default: wattbox)
    - **Polling Interval**: How often to update data (default: 30 seconds)
 
+## ⚠️ Upgrading from v0.2.x to v0.3.0
+
+**Version 0.3.0 introduces a breaking change** to improve entity naming and prevent conflicts with other integrations.
+
+### What Changed
+
+Entity IDs are now properly namespaced with your device name to avoid conflicts:
+
+**Before (v0.2.x):**
+- `sensor.voltage` ❌
+- `switch.outlet_1` ❌  
+- `binary_sensor.device_status` ❌
+
+**After (v0.3.0):**
+- `sensor.wattbox_voltage` ✅ (or `sensor.<your_device_name>_voltage`)
+- `switch.wattbox_outlet_1` ✅
+- `binary_sensor.wattbox_device_status` ✅
+
+### Migration Steps
+
+1. **Before upgrading**, document your existing automations and dashboards that use Wattbox entities
+2. **Upgrade** to v0.3.0 through HACS
+3. **Restart** Home Assistant
+4. **Update** your automations and dashboards with the new entity IDs
+5. **Remove** old entities if they weren't automatically cleaned up (Settings > Devices & Services > Entities)
+
+### Finding New Entity IDs
+
+The new entity IDs use your device's hostname as configured in the Wattbox device itself. To find your new entity IDs:
+
+1. Go to Settings > Devices & Services
+2. Click on your Wattbox integration
+3. View all entities to see their new IDs
+
+**Tip:** Use Home Assistant's search and replace feature in automations to quickly update entity IDs.
+
 ## Entities
 
 ### Switches
@@ -123,6 +159,323 @@ While there is an existing [hass-wattbox integration](https://github.com/eseglem
 - **Power Lost**: Power loss detection
 - **Safe Voltage**: Voltage within safe range
 - **Cloud Connectivity**: Cloud connection status
+
+## Dashboard Examples
+
+Here are some example dashboard configurations to help you get started with visualizing and controlling your Wattbox device.
+
+### Complete Wattbox Dashboard
+
+A comprehensive dashboard showing all device information and controls:
+
+```yaml
+type: vertical-stack
+cards:
+  # Device Status Overview
+  - type: horizontal-stack
+    cards:
+      - type: entity
+        entity: binary_sensor.wattbox_device_status
+        name: Status
+      - type: entity
+        entity: binary_sensor.wattbox_power_lost
+        name: Power Lost
+      - type: entity
+        entity: binary_sensor.wattbox_safe_voltage
+        name: Safe Voltage
+      - type: entity
+        entity: binary_sensor.wattbox_cloud_connectivity
+        name: Cloud Status
+
+  # Power Monitoring Gauges
+  - type: horizontal-stack
+    cards:
+      - type: gauge
+        entity: sensor.wattbox_voltage
+        name: Voltage
+        min: 100
+        max: 130
+        severity:
+          green: 115
+          yellow: 110
+          red: 105
+        needle: true
+      - type: gauge
+        entity: sensor.wattbox_current
+        name: Current
+        min: 0
+        max: 20
+        needle: true
+      - type: gauge
+        entity: sensor.wattbox_power
+        name: Power
+        min: 0
+        max: 2000
+        needle: true
+
+  # Device Information
+  - type: entities
+    title: Device Information
+    entities:
+      - entity: sensor.wattbox_hostname
+        name: Hostname
+      - entity: sensor.wattbox_model
+        name: Model
+      - entity: sensor.wattbox_firmware_version
+        name: Firmware
+      - entity: sensor.wattbox_serial_number
+        name: Serial Number
+
+  # Outlet Controls (First 6 outlets as example)
+  - type: entities
+    title: Outlet Controls
+    entities:
+      - entity: switch.wattbox_outlet_1
+        name: Outlet 1
+        icon: mdi:power-socket-us
+      - entity: switch.wattbox_outlet_2
+        name: Outlet 2
+        icon: mdi:power-socket-us
+      - entity: switch.wattbox_outlet_3
+        name: Outlet 3
+        icon: mdi:power-socket-us
+      - entity: switch.wattbox_outlet_4
+        name: Outlet 4
+        icon: mdi:power-socket-us
+      - entity: switch.wattbox_outlet_5
+        name: Outlet 5
+        icon: mdi:power-socket-us
+      - entity: switch.wattbox_outlet_6
+        name: Outlet 6
+        icon: mdi:power-socket-us
+
+  # Master Controls
+  - type: entities
+    title: Master Controls
+    entities:
+      - entity: switch.wattbox_master_power
+        name: Master Power
+        icon: mdi:power
+      - entity: switch.wattbox_auto_reboot
+        name: Auto Reboot
+        icon: mdi:restart
+```
+
+### Compact Power Monitoring Card
+
+A simple card focused on power monitoring:
+
+```yaml
+type: entities
+title: Wattbox Power Monitor
+entities:
+  - type: attribute
+    entity: sensor.wattbox_voltage
+    attribute: state
+    name: Voltage
+    suffix: V
+  - type: attribute
+    entity: sensor.wattbox_current
+    attribute: state
+    name: Current
+    suffix: A
+  - type: attribute
+    entity: sensor.wattbox_power
+    attribute: state
+    name: Power
+    suffix: W
+  - entity: binary_sensor.wattbox_safe_voltage
+    name: Voltage Status
+```
+
+### Outlet Grid View
+
+A button card grid for quick outlet control (requires `button-card` from HACS):
+
+```yaml
+type: grid
+columns: 3
+square: false
+cards:
+  - type: button
+    entity: switch.wattbox_outlet_1
+    name: Outlet 1
+    tap_action:
+      action: toggle
+    icon: mdi:power-socket-us
+  - type: button
+    entity: switch.wattbox_outlet_2
+    name: Outlet 2
+    tap_action:
+      action: toggle
+    icon: mdi:power-socket-us
+  - type: button
+    entity: switch.wattbox_outlet_3
+    name: Outlet 3
+    tap_action:
+      action: toggle
+    icon: mdi:power-socket-us
+  - type: button
+    entity: switch.wattbox_outlet_4
+    name: Outlet 4
+    tap_action:
+      action: toggle
+    icon: mdi:power-socket-us
+  - type: button
+    entity: switch.wattbox_outlet_5
+    name: Outlet 5
+    tap_action:
+      action: toggle
+    icon: mdi:power-socket-us
+  - type: button
+    entity: switch.wattbox_outlet_6
+    name: Outlet 6
+    tap_action:
+      action: toggle
+    icon: mdi:power-socket-us
+```
+
+### Status Banner (Conditional Card)
+
+Show alerts only when there are issues:
+
+```yaml
+type: conditional
+conditions:
+  - condition: or
+    conditions:
+      - condition: state
+        entity: binary_sensor.wattbox_power_lost
+        state: "on"
+      - condition: state
+        entity: binary_sensor.wattbox_safe_voltage
+        state: "off"
+      - condition: state
+        entity: binary_sensor.wattbox_device_status
+        state: "off"
+card:
+  type: markdown
+  content: |
+    {% if is_state('binary_sensor.wattbox_device_status', 'off') %}
+    ⚠️ **Wattbox Offline** - Device not responding
+    {% endif %}
+    {% if is_state('binary_sensor.wattbox_power_lost', 'on') %}
+    🔌 **Power Lost** - Check main power connection
+    {% endif %}
+    {% if is_state('binary_sensor.wattbox_safe_voltage', 'off') %}
+    ⚡ **Voltage Warning** - Voltage outside safe range
+    {% endif %}
+  card_mod:
+    style: |
+      ha-card {
+        background-color: rgba(255, 152, 0, 0.1);
+        border-left: 4px solid orange;
+      }
+```
+
+### Mini Graph Card (Power History)
+
+Track power consumption over time (requires `mini-graph-card` from HACS):
+
+```yaml
+type: custom:mini-graph-card
+entities:
+  - entity: sensor.wattbox_power
+    name: Power Consumption
+  - entity: sensor.wattbox_voltage
+    name: Voltage
+    y_axis: secondary
+hours_to_show: 24
+points_per_hour: 4
+line_width: 2
+font_size: 75
+show:
+  labels: true
+  labels_secondary: true
+```
+
+## Automation Examples
+
+Here are some useful automation examples for your Wattbox integration.
+
+### Alert on Power Loss
+
+```yaml
+automation:
+  - alias: "Wattbox: Power Loss Alert"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.wattbox_power_lost
+        to: "on"
+    action:
+      - service: notify.notify
+        data:
+          title: "⚠️ Wattbox Power Lost"
+          message: "Main power lost to Wattbox at {{ now().strftime('%H:%M:%S') }}"
+```
+
+### Voltage Monitoring
+
+```yaml
+automation:
+  - alias: "Wattbox: Voltage Warning"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.wattbox_safe_voltage
+        to: "off"
+    action:
+      - service: notify.notify
+        data:
+          title: "⚡ Wattbox Voltage Warning"
+          message: >
+            Voltage outside safe range: {{ states('sensor.wattbox_voltage') }}V
+```
+
+### Scheduled Equipment Reboot
+
+```yaml
+automation:
+  - alias: "Wattbox: Weekly Equipment Reboot"
+    trigger:
+      - platform: time
+        at: "03:00:00"
+    condition:
+      - condition: time
+        weekday:
+          - sun
+    action:
+      # Turn off outlet
+      - service: switch.turn_off
+        target:
+          entity_id: switch.wattbox_outlet_1
+      # Wait 30 seconds
+      - delay:
+          seconds: 30
+      # Turn on outlet
+      - service: switch.turn_on
+        target:
+          entity_id: switch.wattbox_outlet_1
+```
+
+### High Power Usage Alert
+
+```yaml
+automation:
+  - alias: "Wattbox: High Power Usage"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.wattbox_power
+        above: 1500
+        for:
+          minutes: 5
+    action:
+      - service: notify.notify
+        data:
+          title: "⚡ High Power Usage"
+          message: >
+            Wattbox power consumption is {{ states('sensor.wattbox_power') }}W
+
+```
 
 ## Development
 
